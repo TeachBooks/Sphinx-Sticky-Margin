@@ -18,8 +18,8 @@ dependencies = [
 requires-python = ">=3.10"
 
 [project.urls]
-Homepage = "https://github.com/tomvanwoudenbe/Sphinx-Sticky-Margin"
-"Bug Tracker" = "https://github.com/tomvanwoudenbe/Sphinx-Sticky-Margin/issues"
+Homepage = "https://github.com/TeachBooks/Sphinx-Sticky-Margin"
+"Bug Tracker" = "https://github.com/TeachBooks/Sphinx-Sticky-Margin/issues"
 
 [tool.hatch]
 version.source = "vcs"

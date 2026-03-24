@@ -8,7 +8,7 @@
 
 ```{seealso}
 
-[{octicon}`mark-github` Repository](https://github.com/tomvanwoudenbe/Sphinx-Sticky-Margin)
+[{octicon}`mark-github` Repository](https://github.com/TeachBooks/Sphinx-Sticky-Margin)
 
 ```
 
