@@ -1,0 +1,41 @@
+/* Make a generated sticky margin sidebar from a main figure with class
+  "sticky-margin". Hidden by default; shown by JS via the "is-visible" class once
+  the main figure has scrolled above the viewport. */
+
+/* Always hidden below 1200px (no right gutter available) */
+@media (max-width: 1199px) {
+  aside.margin.sidebar.sticky-margin-generated {
+    display: none !important;
+  }
+}
+
+/* At >=1200px: hidden until JS adds "is-visible" */
+@media (min-width: 1200px) {
+  aside.margin.sidebar.sticky-margin-generated:not(.is-visible) {
+    display: none !important;
+  }
+
+  aside.margin.sidebar.sticky-margin-generated.is-preparing,
+  aside.margin.sidebar.sticky-margin-generated.is-visible {
+    display: block !important;
+    position: sticky !important;
+    top: var(--pst-header-height, 4rem);
+    max-height: calc(100vh - var(--pst-header-height, 4rem));
+    overflow-y: auto;
+  }
+
+  aside.margin.sidebar.sticky-margin-generated.is-preparing {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+.sticky-margin-flight {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1200;
+  margin: 0;
+  object-fit: contain;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  border-radius: 0.25rem;
+}
