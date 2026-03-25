@@ -4,13 +4,13 @@
 
 When the original figure scrolls above the header, a duplicate appears in the right margin (on wide screens). When the original figure comes back into view, the margin copy is hidden. This only works for one figure with the `:class: sticky-margin` class per page.
 
-**Installation**
+## Installation
 
 ```bash
 pip install sphinx-sticky-margin
 ```
 
-**Enable Extension**
+## Enable Extension
 
 In `conf.py`:
 
@@ -28,11 +28,11 @@ sphinx:
     - sphinx_sticky_margin
 ```
 
-**Usage**
+## Usage
 
 Add the `:class: sticky-margin` class to figures that should get a sticky margin clone.
 
-**MyST Example**
+### MyST Example
 
 ````md
 ```{figure} path/to/image.png
@@ -42,7 +42,7 @@ Figure caption.
 ```
 ````
 
-**reStructuredText Example**
+### reStructuredText Example
 
 ```rst
 .. figure:: path/to/image.png
@@ -51,7 +51,7 @@ Figure caption.
    Figure caption.
 ```
 
-**Notes**
+## Notes
 
 - The sticky margin display is active from `1200px` viewport width and up.
 - The extension injects `sticky-margin.css` and `sticky-margin.js`.
