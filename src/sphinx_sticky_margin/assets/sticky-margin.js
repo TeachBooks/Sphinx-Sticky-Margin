@@ -47,6 +47,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var lastSourceRect = null;
     var currentFlightAnimation = null;
     var hideTimeoutId = null;
+    var allowFlightAnimation = false;
+    var initialScrollY = window.scrollY;
 
     aside.style.transition = 'opacity 150ms ease-in-out';
 
@@ -150,25 +152,21 @@ document.addEventListener('DOMContentLoaded', function () {
         return false;
       }
 
-      var visibleRect = mainFigure.getBoundingClientRect();
       for (var node = mainFigure; node && node.nodeType === 1; node = node.parentElement) {
         var style = window.getComputedStyle(node);
         if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') {
           return false;
         }
 
-        if (style.overflow !== 'visible' || style.overflowX !== 'visible' || style.overflowY !== 'visible') {
-          var clipRect = node.getBoundingClientRect();
-          visibleRect = {
-            left: Math.max(visibleRect.left, clipRect.left),
-            top: Math.max(visibleRect.top, clipRect.top),
-            right: Math.min(visibleRect.right, clipRect.right),
-            bottom: Math.min(visibleRect.bottom, clipRect.bottom)
-          };
-
-          if (visibleRect.right <= visibleRect.left || visibleRect.bottom <= visibleRect.top) {
-            return false;
-          }
+        // Generic collapsed-container signal without class/attribute keywords:
+        // content exists (scrollHeight > 0) but rendered box has zero height and clips overflow.
+        if (
+          node !== mainFigure &&
+          node.clientHeight === 0 &&
+          node.scrollHeight > 0 &&
+          (style.overflow !== 'visible' || style.overflowY !== 'visible')
+        ) {
+          return false;
         }
       }
 
@@ -184,11 +182,49 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
+    function updateStickyTopOffset() {
+      var topOffset = headerHeight;
+      var tocBox = document.querySelector('#pst-secondary-sidebar .sidebar-secondary-item');
+
+      if (window.innerWidth >= 1200 && tocBox) {
+        var tocStyle = window.getComputedStyle(tocBox);
+        if (tocStyle.display !== 'none' && tocStyle.visibility !== 'hidden') {
+          var tocRect = tocBox.getBoundingClientRect();
+          if (tocRect.height > 0 && tocRect.bottom > topOffset) {
+            topOffset = Math.ceil(tocRect.bottom + 8);
+          }
+        }
+      }
+
+      // Keep at least some viewport space for the sticky figure.
+      var maxTopOffset = Math.max(headerHeight, window.innerHeight - 140);
+      if (topOffset > maxTopOffset) {
+        topOffset = maxTopOffset;
+      }
+
+      aside.style.top = topOffset + 'px';
+      aside.style.maxHeight = 'calc(100vh - ' + topOffset + 'px)';
+    }
+
+    function evaluateStickyVisibility() {
+      rememberSourceRect();
+      updateStickyTopOffset();
+
+      var rect = mainFigure.getBoundingClientRect();
+      if (window.innerWidth >= 1200 && isFigureRenderedAndVisible() && rect.bottom < headerHeight) {
+        showStickyMargin();
+      } else {
+        hideStickyMargin();
+      }
+    }
+
     function showStickyMargin() {
       if (!isFigureRenderedAndVisible()) {
         hideStickyMargin();
         return;
       }
+
+      updateStickyTopOffset();
 
       if (aside.classList.contains('is-visible')) {
         cancelPendingHide();
@@ -202,6 +238,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (
         prefersReducedMotion ||
+        !allowFlightAnimation ||
         !sourceImage ||
         !targetImage ||
         !lastSourceRect ||
@@ -256,9 +293,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     window.addEventListener('scroll', function() {
+      if (!allowFlightAnimation && Math.abs(window.scrollY - initialScrollY) > 2) {
+        allowFlightAnimation = true;
+      }
       rememberSourceRect();
+      updateStickyTopOffset();
     }, { passive: true });
-    window.addEventListener('resize', rememberSourceRect);
+    window.addEventListener('resize', function () {
+      rememberSourceRect();
+      updateStickyTopOffset();
+    });
 
     var headerEl = document.querySelector('.bd-header-article') || document.querySelector('header');
     var headerHeight = headerEl ? headerEl.offsetHeight : 0;
@@ -266,6 +310,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         rememberSourceRect();
+        updateStickyTopOffset();
 
         if (window.innerWidth < 1200 || !isFigureRenderedAndVisible()) {
           hideStickyMargin();
@@ -285,6 +330,8 @@ document.addEventListener('DOMContentLoaded', function () {
     observer.observe(mainFigure);
 
     window.addEventListener('load', function () {
+      evaluateStickyVisibility();
+
       if (aside.classList.contains('is-visible')) {
         typesetAsideMath();
       }
@@ -292,14 +339,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Manually trigger visibility check on page load for current scroll position
     requestAnimationFrame(function() {
-      rememberSourceRect();
-      var rect = mainFigure.getBoundingClientRect();
-
-      if (window.innerWidth >= 1200 && isFigureRenderedAndVisible() && rect.bottom < headerHeight) {
-        showStickyMargin();
-      } else {
-        hideStickyMargin();
-      }
+      evaluateStickyVisibility();
     });
   });
 });
