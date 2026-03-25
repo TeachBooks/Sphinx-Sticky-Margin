@@ -1,6 +1,4 @@
-::::{include} README.md
-:end-before: "**Installation**"
-::::
+````{margin}
 
 ```{note}
 
@@ -13,6 +11,13 @@
 [{octicon}`mark-github` Repository](https://github.com/TeachBooks/Sphinx-Sticky-Margin)
 
 ```
+````
+
+::::{include} README.md
+:end-before: "**Installation**"
+::::
+
+
 
 **Example**
 
