@@ -15,7 +15,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var figureClone = mainFigure.cloneNode(true);
     aside.appendChild(figureClone);
-    mainFigure.insertAdjacentElement('afterend', aside);
+
+    // Walk up from the figure to .bd-article. If any ancestor has non-visible
+    // overflow (hidden, clip, scroll, auto) it will constrain position:sticky
+    // or clip the aside — so insert after the outermost such ancestor instead.
+    // This handles admonitions, sd-cards, dropdowns, details, tabs, etc.
+    // generically without needing to enumerate their class names.
+    var articleEl = document.querySelector('.bd-article') || document.body;
+    var insertAfter = mainFigure;
+    var el = mainFigure.parentElement;
+    while (el && el !== articleEl) {
+      var ovStyle = window.getComputedStyle(el);
+      if (ovStyle.overflow !== 'visible' || ovStyle.overflowX !== 'visible' || ovStyle.overflowY !== 'visible') {
+        insertAfter = el;
+      }
+      el = el.parentElement;
+    }
+    insertAfter.insertAdjacentElement('afterend', aside);
 
     function ensureMathVisible() {
       // Clear any hidden styles on math elements and MathJax containers
@@ -129,8 +145,38 @@ document.addEventListener('DOMContentLoaded', function () {
       animation.addEventListener('cancel', finalize);
     }
 
+    function isFigureRenderedAndVisible() {
+      if (!mainFigure.isConnected || mainFigure.getClientRects().length === 0) {
+        return false;
+      }
+
+      var visibleRect = mainFigure.getBoundingClientRect();
+      for (var node = mainFigure; node && node.nodeType === 1; node = node.parentElement) {
+        var style = window.getComputedStyle(node);
+        if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') {
+          return false;
+        }
+
+        if (style.overflow !== 'visible' || style.overflowX !== 'visible' || style.overflowY !== 'visible') {
+          var clipRect = node.getBoundingClientRect();
+          visibleRect = {
+            left: Math.max(visibleRect.left, clipRect.left),
+            top: Math.max(visibleRect.top, clipRect.top),
+            right: Math.min(visibleRect.right, clipRect.right),
+            bottom: Math.min(visibleRect.bottom, clipRect.bottom)
+          };
+
+          if (visibleRect.right <= visibleRect.left || visibleRect.bottom <= visibleRect.top) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    }
+
     function rememberSourceRect() {
-      if (!sourceImage || window.innerWidth < 1200) return;
+      if (!sourceImage || window.innerWidth < 1200 || !isFigureRenderedAndVisible()) return;
 
       var rect = sourceImage.getBoundingClientRect();
       if (rect.bottom > 0 && rect.top < window.innerHeight && rect.width > 0 && rect.height > 0) {
@@ -139,6 +185,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showStickyMargin() {
+      if (!isFigureRenderedAndVisible()) {
+        hideStickyMargin();
+        return;
+      }
+
       if (aside.classList.contains('is-visible')) {
         cancelPendingHide();
         typesetAsideMath();
@@ -216,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function () {
       entries.forEach(function (entry) {
         rememberSourceRect();
 
-        if (window.innerWidth < 1200) {
+        if (window.innerWidth < 1200 || !isFigureRenderedAndVisible()) {
           hideStickyMargin();
           return;
         }
@@ -244,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function () {
       rememberSourceRect();
       var rect = mainFigure.getBoundingClientRect();
 
-      if (window.innerWidth >= 1200 && rect.bottom < headerHeight) {
+      if (window.innerWidth >= 1200 && isFigureRenderedAndVisible() && rect.bottom < headerHeight) {
         showStickyMargin();
       } else {
         hideStickyMargin();
