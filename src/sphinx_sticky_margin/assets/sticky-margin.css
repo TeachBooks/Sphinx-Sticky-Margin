@@ -4,19 +4,19 @@
 
 /* Always hidden below 1200px (no right gutter available) */
 @media (max-width: 1199px) {
-  aside.margin.sidebar.sticky-margin-generated {
+  aside.sticky-margin-generated {
     display: none !important;
   }
 }
 
-/* At >=1200px: hidden until JS adds "is-visible" */
+/* At ≥1200px: hidden until JS adds "is-visible" */
 @media (min-width: 1200px) {
-  aside.margin.sidebar.sticky-margin-generated:not(.is-visible) {
+  aside.sticky-margin-generated:not(.is-visible) {
     display: none !important;
   }
 
-  aside.margin.sidebar.sticky-margin-generated.is-preparing,
-  aside.margin.sidebar.sticky-margin-generated.is-visible {
+  aside.sticky-margin-generated.is-preparing,
+  aside.sticky-margin-generated.is-visible {
     display: block !important;
     position: sticky !important;
     top: var(--pst-header-height, 4rem);
@@ -24,10 +24,47 @@
     overflow-y: auto;
   }
 
-  aside.margin.sidebar.sticky-margin-generated.is-preparing {
+  aside.sticky-margin-generated.is-preparing {
     visibility: hidden;
     pointer-events: none;
   }
+}
+
+#pst-secondary-sidebar .sticky-margin-secondary-item {
+  display: block;
+  border-left: none !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
+
+.bd-sidebar-secondary .sidebar-secondary-items {
+  flex-direction: column;
+}
+
+/* Patch for secondary sidebar spacing from sphinx-book-theme:
+   https://github.com/executablebooks/sphinx-book-theme/blob/main/src/sphinx_book_theme/assets/styles/sections/_sidebar-secondary.scss */
+@media (min-width: 1200px) {
+  .bd-sidebar-secondary {
+    /* Remove padding so that it's flush on the top and left */
+    padding: 0 !important;
+  }
+}
+
+#pst-secondary-sidebar .sticky-margin-secondary-item::before {
+  display: none !important;
+  content: none !important;
+}
+
+#pst-secondary-sidebar .sticky-margin-secondary-item > aside.sticky-margin-generated {
+  width: 100%;
+  margin: 0 !important;
+}
+
+#pst-secondary-sidebar.sticky-margin-generated-sidebar aside.sticky-margin-generated > .sidebar-title {
+  display: block;
+  height: 48px;
+  margin: 0;
+  padding: 0;
 }
 
 .sticky-margin-flight {

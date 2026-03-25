@@ -10,28 +10,65 @@ document.addEventListener('DOMContentLoaded', function () {
     handledFigures.add(mainFigure);
 
     var aside = document.createElement('aside');
-    aside.className = 'margin sidebar sticky-margin sticky-margin-generated';
+    aside.className = 'sticky-margin sticky-margin-generated';
     aside.innerHTML = '<p class="sidebar-title"></p>';
 
     var figureClone = mainFigure.cloneNode(true);
     aside.appendChild(figureClone);
 
-    // Walk up from the figure to .bd-article. If any ancestor has non-visible
-    // overflow (hidden, clip, scroll, auto) it will constrain position:sticky
-    // or clip the aside — so insert after the outermost such ancestor instead.
-    // This handles admonitions, sd-cards, dropdowns, details, tabs, etc.
-    // generically without needing to enumerate their class names.
-    var articleEl = document.querySelector('.bd-article') || document.body;
-    var insertAfter = mainFigure;
-    var el = mainFigure.parentElement;
-    while (el && el !== articleEl) {
-      var ovStyle = window.getComputedStyle(el);
-      if (ovStyle.overflow !== 'visible' || ovStyle.overflowX !== 'visible' || ovStyle.overflowY !== 'visible') {
-        insertAfter = el;
+    // Prefer mounting in the same sidebar column as the local TOC.
+    // If the page has no local TOC/sidebar, create the normal secondary
+    // sidebar container and mount the sticky figure there.
+    var sidebar = document.querySelector('#pst-secondary-sidebar');
+    var sidebarWasGenerated = false;
+    if (!sidebar) {
+      var bdContent = document.querySelector('.bd-content');
+      if (bdContent) {
+        sidebar = document.createElement('div');
+        sidebar.id = 'pst-secondary-sidebar';
+        sidebar.className = 'bd-sidebar-secondary bd-toc';
+        sidebar.classList.add('sticky-margin-generated-sidebar');
+        sidebarWasGenerated = true;
+
+        var sidebarItems = document.createElement('div');
+        sidebarItems.className = 'sidebar-secondary-items sidebar-secondary__inner';
+        sidebar.appendChild(sidebarItems);
+
+        bdContent.appendChild(sidebar);
       }
-      el = el.parentElement;
     }
-    insertAfter.insertAdjacentElement('afterend', aside);
+
+    var sidebarInner = sidebar ? sidebar.querySelector('.sidebar-secondary-items, .sidebar-secondary__inner') : null;
+    var tocItem = document.querySelector('#pst-secondary-sidebar .sidebar-secondary-item');
+    if (sidebarInner) {
+      var stickyItem = document.createElement('div');
+      stickyItem.className = 'sidebar-secondary-item sticky-margin-secondary-item';
+      stickyItem.appendChild(aside);
+
+      if (tocItem && tocItem.parentElement === sidebarInner) {
+        tocItem.insertAdjacentElement('afterend', stickyItem);
+      } else {
+        sidebarInner.appendChild(stickyItem);
+      }
+
+      // For existing sidebars, remove title spacer so there is no extra whitespace.
+      if (!sidebarWasGenerated) {
+        var titleEl = aside.querySelector('.sidebar-title');
+        if (titleEl) {
+          titleEl.remove();
+        }
+      }
+    } else {
+      // Fallback for layouts without a secondary sidebar.
+      var articleEl = document.querySelector('.bd-article') || document.body;
+      var insertAfter = mainFigure;
+      if (articleEl && articleEl !== document.body) {
+        while (insertAfter.parentElement && insertAfter.parentElement !== articleEl) {
+          insertAfter = insertAfter.parentElement;
+        }
+      }
+      insertAfter.insertAdjacentElement('afterend', aside);
+    }
 
     function ensureMathVisible() {
       // Clear any hidden styles on math elements and MathJax containers
@@ -183,6 +220,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateStickyTopOffset() {
+      if (aside.closest('#pst-secondary-sidebar')) {
+        aside.style.top = '0px';
+        aside.style.maxHeight = 'calc(100vh - var(--pst-header-height, 4rem))';
+        return;
+      }
+
       var topOffset = headerHeight;
       var sidebar = document.querySelector('#pst-secondary-sidebar');
 
@@ -194,12 +237,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       }
 
-      // Keep at least some viewport space for the sticky figure.
-      var maxTopOffset = Math.max(headerHeight, window.innerHeight - 140);
-      if (topOffset > maxTopOffset) {
-        topOffset = maxTopOffset;
-      }
-
       aside.style.top = topOffset + 'px';
       aside.style.maxHeight = 'calc(100vh - ' + topOffset + 'px)';
     }
@@ -209,7 +246,11 @@ document.addEventListener('DOMContentLoaded', function () {
       updateStickyTopOffset();
 
       var rect = mainFigure.getBoundingClientRect();
-      if (window.innerWidth >= 1200 && isFigureRenderedAndVisible() && rect.bottom < headerHeight) {
+      if (
+        window.innerWidth >= 1200 &&
+        isFigureRenderedAndVisible() &&
+        rect.bottom < headerHeight
+      ) {
         showStickyMargin();
       } else {
         hideStickyMargin();
