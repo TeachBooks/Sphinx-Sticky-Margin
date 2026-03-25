@@ -187,15 +187,10 @@ document.addEventListener('DOMContentLoaded', function () {
       var sidebar = document.querySelector('#pst-secondary-sidebar');
 
       if (window.innerWidth >= 1200 && sidebar && !sidebar.classList.contains('hide')) {
-        // Reserve space only for the local TOC block (heading + nav item).
-        var tocNav = sidebar.querySelector('nav.page-toc');
-        var tocBox = tocNav ? (tocNav.closest('.sidebar-secondary-item') || tocNav) : null;
-
-        if (tocBox) {
-          var tocRect = tocBox.getBoundingClientRect();
-          if (tocRect.height > 0 && tocRect.bottom > topOffset) {
-            topOffset = Math.ceil(tocRect.bottom + 8);
-          }
+        // The sidebar itself owns open/collapsed behavior in CSS.
+        var sidebarRect = sidebar.getBoundingClientRect();
+        if (sidebarRect.height > 0 && sidebarRect.bottom > topOffset) {
+          topOffset = Math.ceil(sidebarRect.bottom + 8);
         }
       }
 
