@@ -1,8 +1,8 @@
 # Sphinx Sticky Margin
 
-`sphinx-sticky-margin` is a Sphinx extension that adds a sticky margin copy for figures marked with the `:sticky-margin:` option.
+`sphinx-sticky-margin` is a Sphinx extension that adds a sticky margin copy for figures marked with the `:class: sticky-margin` option.
 
-When the original figure scrolls above the header, a duplicate appears in the right margin (on wide screens). When the original figure comes back into view, the margin copy is hidden. This only works for one figure with the `:sticky-margin:` option per page and there is no local toc in the right margin, so no local section titles should be used.
+When the original figure scrolls above the header, a duplicate appears in the right margin (on wide screens). When the original figure comes back into view, the margin copy is hidden. This only works for one figure with the `:class: sticky-margin` class per page.=
 
 **Installation**
 
@@ -30,13 +30,13 @@ sphinx:
 
 **Usage**
 
-Add the `:sticky-margin:` option to figures that should get a sticky margin clone.
+Add the `:class: sticky-margin` class to figures that should get a sticky margin clone.
 
 **MyST Example**
 
 ````md
 ```{figure} path/to/image.png
-:sticky-margin:
+:class: sticky-margin
 
 Figure caption.
 ```
@@ -46,7 +46,7 @@ Figure caption.
 
 ```rst
 .. figure:: path/to/image.png
-   :sticky-margin:
+   :class: sticky-margin
 
    Figure caption.
 ```
