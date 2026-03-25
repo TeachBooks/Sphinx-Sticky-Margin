@@ -26,7 +26,7 @@ This example shows how to enable sticky margin behavior by adding the `:sticky-m
 ````md
 ```{figure} /images/TeachBooks_logo.svg
 :name: sticky_basic
-:sticky-margin:
+:class: sticky-margin
 :width: 50%
 
 A figure that moves to the margin after it scrolls out of view.
@@ -35,7 +35,7 @@ A figure that moves to the margin after it scrolls out of view.
 
 ```{figure} /images/TeachBooks_logo.svg
 :name: sticky_basic
-:sticky-margin:
+:class: sticky-margin
 :width: 50%
 
 A figure that moves to the margin after it scrolls out of view.
