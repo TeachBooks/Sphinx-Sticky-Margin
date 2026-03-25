@@ -184,11 +184,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateStickyTopOffset() {
       var topOffset = headerHeight;
-      var tocBox = document.querySelector('#pst-secondary-sidebar .sidebar-secondary-item');
+      var sidebar = document.querySelector('#pst-secondary-sidebar');
 
-      if (window.innerWidth >= 1200 && tocBox) {
-        var tocStyle = window.getComputedStyle(tocBox);
-        if (tocStyle.display !== 'none' && tocStyle.visibility !== 'hidden') {
+      if (window.innerWidth >= 1200 && sidebar && !sidebar.classList.contains('hide')) {
+        // Reserve space only for the local TOC block (heading + nav item).
+        var tocNav = sidebar.querySelector('nav.page-toc');
+        var tocBox = tocNav ? (tocNav.closest('.sidebar-secondary-item') || tocNav) : null;
+
+        if (tocBox) {
           var tocRect = tocBox.getBoundingClientRect();
           if (tocRect.height > 0 && tocRect.bottom > topOffset) {
             topOffset = Math.ceil(tocRect.bottom + 8);
