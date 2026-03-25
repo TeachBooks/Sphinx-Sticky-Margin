@@ -15,13 +15,12 @@
 ````
 
 ::::{include} README.md
+:end-before: "## Installation"
 ::::
 
-## Examples
+## Example
 
-These examples show how to enable sticky margin behavior by adding the `:sticky-margin:` option to a figure.
-
-### Example 1: Basic figure with sticky margin
+This example shows how to enable sticky margin behavior by adding the `:sticky-margin:` option to a figure.
 
 ````md
 ```{figure} /images/TeachBooks_logo.svg
@@ -40,65 +39,7 @@ A figure that moves to the margin after it scrolls out of view.
 
 A figure that moves to the margin after it scrolls out of view.
 ```
-
-### Example 2: Regular figure (no sticky margin)
-
-````md
-```{figure} /images/TeachBooks_logo.svg
-:name: sticky_regular
-:width: 50%
-
-A normal figure without the sticky class.
-```
-````
-
-```{figure} /images/TeachBooks_logo.svg
-:name: sticky_regular
-:width: 50%
-
-A normal figure without the sticky class.
-```
-
-### Example 3: Multiple sticky figures
-
-````md
-```{figure} /images/TeachBooks_logo.svg
-:name: sticky_multi_1
-:sticky-margin:
-:width: 45%
-
-First sticky figure.
-```
-
-```{figure} /images/TeachBooks_logo.svg
-:name: sticky_multi_2
-:sticky-margin:
-:width: 45%
-
-Second sticky figure.
-```
-````
-
-```{figure} /images/TeachBooks_logo.svg
-:name: sticky_multi_1
-:sticky-margin:
-:width: 45%
-
-First sticky figure.
-```
-
-```{figure} /images/TeachBooks_logo.svg
-:name: sticky_multi_2
-:sticky-margin:
-:width: 45%
-
-Second sticky figure.
-```
-
-### Example 4: Behavior on small screens
-
-On viewport widths below 1200px, sticky margin clones are not shown and figures behave normally in the main content flow.
 
 ::::{include} README.md
-:start-after: "## Notes"
+:start-after: "## Installation"
 ::::
