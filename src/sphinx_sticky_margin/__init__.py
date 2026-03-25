@@ -81,11 +81,7 @@ def _copy_asset_files(app: Sphinx, exception: Optional[Exception]) -> None:
 
 def setup(app: Sphinx) -> dict[str, object]:
     """Register the extension with Sphinx."""
-    # Re-apply on multiple late events to remain compatible with extensions
-    # that may also override ``figure`` at different moments.
-    app.connect("builder-inited", _patch_figure_directive, priority=10**12)
-    app.connect("env-before-read-docs", _patch_figure_directive, priority=10**12)
-    app.connect("source-read", _patch_figure_directive, priority=10**12)
+    app.connect("env-before-read-docs", _patch_figure_directive)
     app.add_css_file("sticky-margin.css")
     app.add_js_file("sticky-margin.js")
     app.connect("build-finished", _copy_asset_files)
