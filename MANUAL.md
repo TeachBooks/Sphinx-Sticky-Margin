@@ -1,4 +1,6 @@
-````{margin}
+::::{include} README.md
+:end-before: "**Installation**"
+::::
 
 ```{note}
 
@@ -12,13 +14,7 @@
 
 ```
 
-````
-
-::::{include} README.md
-:end-before: "## Installation"
-::::
-
-## Example
+**Example**
 
 This example shows how to enable sticky margin behavior by adding the `:sticky-margin:` option to a figure.
 
@@ -41,5 +37,5 @@ A figure that moves to the margin after it scrolls out of view.
 ```
 
 ::::{include} README.md
-:start-after: "## Installation"
+:start-after: "**Installation**"
 ::::
