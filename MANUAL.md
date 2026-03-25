@@ -19,14 +19,14 @@
 
 ## Examples
 
-These examples show how to enable sticky margin behavior by adding the `sticky-margin` class to a figure.
+These examples show how to enable sticky margin behavior by adding the `:sticky-margin:` option to a figure.
 
 ### Example 1: Basic figure with sticky margin
 
 ````md
 ```{figure} /images/TeachBooks_logo.svg
 :name: sticky_basic
-:class: sticky-margin
+:sticky-margin:
 :width: 50%
 
 A figure that moves to the margin after it scrolls out of view.
@@ -35,7 +35,7 @@ A figure that moves to the margin after it scrolls out of view.
 
 ```{figure} /images/TeachBooks_logo.svg
 :name: sticky_basic
-:class: sticky-margin
+:sticky-margin:
 :width: 50%
 
 A figure that moves to the margin after it scrolls out of view.
@@ -64,7 +64,7 @@ A normal figure without the sticky class.
 ````md
 ```{figure} /images/TeachBooks_logo.svg
 :name: sticky_multi_1
-:class: sticky-margin
+:sticky-margin:
 :width: 45%
 
 First sticky figure.
@@ -72,7 +72,7 @@ First sticky figure.
 
 ```{figure} /images/TeachBooks_logo.svg
 :name: sticky_multi_2
-:class: sticky-margin
+:sticky-margin:
 :width: 45%
 
 Second sticky figure.
@@ -81,7 +81,7 @@ Second sticky figure.
 
 ```{figure} /images/TeachBooks_logo.svg
 :name: sticky_multi_1
-:class: sticky-margin
+:sticky-margin:
 :width: 45%
 
 First sticky figure.
@@ -89,7 +89,7 @@ First sticky figure.
 
 ```{figure} /images/TeachBooks_logo.svg
 :name: sticky_multi_2
-:class: sticky-margin
+:sticky-margin:
 :width: 45%
 
 Second sticky figure.

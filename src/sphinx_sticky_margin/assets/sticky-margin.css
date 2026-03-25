@@ -30,6 +30,14 @@
   }
 }
 
+/* Hide the PyData right TOC sidebar on pages that have sticky margin figures,
+   since both compete for the same right margin space (>=1200px only). */
+@media (min-width: 1200px) {
+  body:has(aside.sticky-margin-generated) #pst-secondary-sidebar {
+    display: none !important;
+  }
+}
+
 .sticky-margin-flight {
   position: fixed;
   pointer-events: none;
