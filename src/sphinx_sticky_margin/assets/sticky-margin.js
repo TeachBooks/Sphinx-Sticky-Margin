@@ -54,15 +54,22 @@ document.addEventListener('DOMContentLoaded', function () {
     var sidebarInner = sidebar ? sidebar.querySelector('.sidebar-secondary-items, .sidebar-secondary__inner') : null;
     var tocItem = document.querySelector('#pst-secondary-sidebar .sidebar-secondary-item');
     if (sidebarInner) {
+      var stickyList = sidebarInner.querySelector('.sticky-margin-secondary-list');
+      if (!stickyList) {
+        stickyList = document.createElement('div');
+        stickyList.className = 'sticky-margin-secondary-list';
+
+        if (tocItem && tocItem.parentElement === sidebarInner) {
+          tocItem.insertAdjacentElement('afterend', stickyList);
+        } else {
+          sidebarInner.appendChild(stickyList);
+        }
+      }
+
       var stickyItem = document.createElement('div');
       stickyItem.className = 'sidebar-secondary-item sticky-margin-secondary-item';
       stickyItem.appendChild(aside);
-
-      if (tocItem && tocItem.parentElement === sidebarInner) {
-        tocItem.insertAdjacentElement('afterend', stickyItem);
-      } else {
-        sidebarInner.appendChild(stickyItem);
-      }
+      stickyList.appendChild(stickyItem);
 
       // For existing sidebars, remove title spacer so there is no extra whitespace.
       if (!sidebarWasGenerated) {
