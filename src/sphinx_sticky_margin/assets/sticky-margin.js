@@ -100,6 +100,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var hideTimeoutId = null;
     var allowFlightAnimation = false;
     var initialScrollY = window.scrollY;
+    var lastScrollY = window.scrollY;
+    var isScrollingUp = false;
+    var previousMarkerPassedHeader = false;
 
     aside.style.transition = 'opacity 150ms ease-in-out';
 
@@ -261,19 +264,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
       var rect = mainFigure.getBoundingClientRect();
       var markerPassedHeader = hideMarker && hideMarker.getBoundingClientRect().top < headerHeight;
+      var crossedHideMarkerUpward = hideMarker && previousMarkerPassedHeader && !markerPassedHeader && isScrollingUp;
       if (
         window.innerWidth >= 1200 &&
         isFigureRenderedAndVisible() &&
         rect.bottom < headerHeight &&
         !markerPassedHeader
       ) {
-        showStickyMargin();
+        showStickyMargin(crossedHideMarkerUpward);
       } else {
         hideStickyMargin();
       }
+
+      previousMarkerPassedHeader = !!markerPassedHeader;
     }
 
-    function showStickyMargin() {
+    function showStickyMargin(useFadeIn) {
       if (!isFigureRenderedAndVisible()) {
         hideStickyMargin();
         return;
@@ -290,6 +296,19 @@ document.addEventListener('DOMContentLoaded', function () {
       cancelPendingHide();
       cancelCurrentFlight();
       aside.style.opacity = '1';
+
+      if (useFadeIn) {
+        ensureMathVisible();
+        aside.classList.add('is-visible');
+        if (!prefersReducedMotion) {
+          aside.style.opacity = '0';
+          requestAnimationFrame(function () {
+            aside.style.opacity = '1';
+          });
+        }
+        typesetAsideMath();
+        return;
+      }
 
       if (
         prefersReducedMotion ||
@@ -348,6 +367,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     window.addEventListener('scroll', function() {
+      var currentScrollY = window.scrollY;
+      isScrollingUp = currentScrollY < lastScrollY;
+      lastScrollY = currentScrollY;
+
       if (!allowFlightAnimation && Math.abs(window.scrollY - initialScrollY) > 2) {
         allowFlightAnimation = true;
       }
@@ -362,6 +385,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var headerEl = document.querySelector('.bd-header-article') || document.querySelector('header');
     var headerHeight = headerEl ? headerEl.offsetHeight : 0;
+    previousMarkerPassedHeader = hideMarker ? hideMarker.getBoundingClientRect().top < headerHeight : false;
 
     var observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -378,7 +402,7 @@ document.addEventListener('DOMContentLoaded', function () {
           hideStickyMargin();
         } else if (entry.boundingClientRect.bottom < headerHeight) {
           // Figure scrolled above header - show margin
-          showStickyMargin();
+          showStickyMargin(false);
         }
       });
     }, { threshold: 0, rootMargin: '-' + headerHeight + 'px 0px 0px 0px' });
