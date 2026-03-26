@@ -353,7 +353,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       rememberSourceRect();
       updateStickyTopOffset();
-      evaluateStickyVisibility();
     }, { passive: true });
     window.addEventListener('resize', function () {
       rememberSourceRect();
