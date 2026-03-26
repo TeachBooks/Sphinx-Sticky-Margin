@@ -32,6 +32,8 @@ sphinx:
 
 Add the `:class: sticky-margin` class to figures that should get a sticky margin clone.
 
+Insert a `hide-sticky-margin` marker to fade out the previous sticky figure once you scroll past that marker.
+
 ### MyST Example
 
 ````md
@@ -50,6 +52,15 @@ Figure caption.
 
    Figure caption.
 ```
+
+### Hide Marker (MyST)
+
+````md
+```{hide-sticky-margin}
+```
+````
+
+When the marker scrolls above the header, the previous sticky margin figure is hidden with a fade-out.
 
 ## Notes
 

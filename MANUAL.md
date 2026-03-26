@@ -39,6 +39,13 @@ A figure that moves to the margin after it scrolls out of view.
 A figure that moves to the margin after it scrolls out of view.
 ```
 
+Use a hide marker to stop showing that sticky figure after a specific point:
+
+````md
+```{hide-sticky-margin}
+```
+````
+
 ::::{include} README.md
 :start-after: "## Installation"
 ::::

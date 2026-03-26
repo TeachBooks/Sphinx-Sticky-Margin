@@ -1,5 +1,18 @@
 document.addEventListener('DOMContentLoaded', function () {
   var handledFigures = new WeakSet();
+  var hideMarkers = Array.prototype.slice.call(
+    document.querySelectorAll('.hide-sticky-margin-marker')
+  );
+
+  function getNextHideMarker(mainFigure) {
+    for (var i = 0; i < hideMarkers.length; i += 1) {
+      var marker = hideMarkers[i];
+      if (mainFigure.compareDocumentPosition(marker) & Node.DOCUMENT_POSITION_FOLLOWING) {
+        return marker;
+      }
+    }
+    return null;
+  }
 
   document.querySelectorAll('.sticky-margin').forEach(function (marker) {
     var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -81,6 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var sourceImage = mainFigure.querySelector('.sticky-margin') || mainFigure.querySelector('img');
     var targetImage = aside.querySelector('img');
+    var hideMarker = getNextHideMarker(mainFigure);
     var lastSourceRect = null;
     var currentFlightAnimation = null;
     var hideTimeoutId = null;
@@ -246,10 +260,12 @@ document.addEventListener('DOMContentLoaded', function () {
       updateStickyTopOffset();
 
       var rect = mainFigure.getBoundingClientRect();
+      var markerPassedHeader = hideMarker && hideMarker.getBoundingClientRect().top < headerHeight;
       if (
         window.innerWidth >= 1200 &&
         isFigureRenderedAndVisible() &&
-        rect.bottom < headerHeight
+        rect.bottom < headerHeight &&
+        !markerPassedHeader
       ) {
         showStickyMargin();
       } else {
@@ -337,10 +353,12 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       rememberSourceRect();
       updateStickyTopOffset();
+      evaluateStickyVisibility();
     }, { passive: true });
     window.addEventListener('resize', function () {
       rememberSourceRect();
       updateStickyTopOffset();
+      evaluateStickyVisibility();
     });
 
     var headerEl = document.querySelector('.bd-header-article') || document.querySelector('header');
@@ -367,6 +385,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }, { threshold: 0, rootMargin: '-' + headerHeight + 'px 0px 0px 0px' });
 
     observer.observe(mainFigure);
+
+    if (hideMarker) {
+      var hideObserver = new IntersectionObserver(function () {
+        evaluateStickyVisibility();
+      }, { threshold: 0, rootMargin: '-' + headerHeight + 'px 0px 0px 0px' });
+
+      hideObserver.observe(hideMarker);
+    }
 
     window.addEventListener('load', function () {
       evaluateStickyVisibility();
