@@ -333,9 +333,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
       aside.classList.add('is-preparing');
       var targetRect = targetImage.getBoundingClientRect();
-      aside.classList.remove('is-preparing');
 
       if (targetRect.width === 0 || targetRect.height === 0) {
+        aside.classList.remove('is-preparing');
         ensureMathVisible();
         aside.classList.add('is-visible');
         typesetAsideMath();
@@ -345,6 +345,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var clone = createFlightClone(sourceImage, lastSourceRect);
 
       animateFlight(clone, lastSourceRect, targetRect, function () {
+        aside.classList.remove('is-preparing');
         ensureMathVisible();
         aside.classList.add('is-visible');
         typesetAsideMath();
