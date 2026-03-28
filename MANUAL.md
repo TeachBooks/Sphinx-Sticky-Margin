@@ -13,7 +13,10 @@
 ```
 ````
 
+# Sticky Margin Figures
+
 ::::{include} README.md
+:start-after: "# Sphinx Sticky Margin"
 :end-before: "## Installation"
 ::::
 
