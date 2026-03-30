@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sphinx-sticky-margin"
+dynamic=["version"]
+description = "A Sphinx extension that renders selected figures as sticky margin sidebars while scrolling."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Tom van Woudenberg", email = "t.r.vanwoudenberg@tudelft.nl" }
+]
+dependencies = [
+    "sphinx>=5.0"
+]
+
+requires-python = ">=3.10"
+
+[project.urls]
+Homepage = "https://github.com/TeachBooks/Sphinx-Sticky-Margin"
+"Bug Tracker" = "https://github.com/TeachBooks/Sphinx-Sticky-Margin/issues"
+
+[tool.hatch]
+version.source = "vcs"
+build.hooks.vcs.version-file = "src/sphinx_sticky_margin/_version.py"

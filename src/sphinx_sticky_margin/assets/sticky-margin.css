@@ -1,0 +1,91 @@
+/* Make a generated sticky margin sidebar from a main figure with class
+  "sticky-margin". Hidden by default; shown by JS via the "is-visible" class once
+  the main figure has scrolled above the viewport. */
+
+/* Always hidden below 1200px (no right gutter available) */
+@media (max-width: 1199px) {
+  aside.sticky-margin-generated {
+    display: none !important;
+  }
+}
+
+/* At ≥1200px: hidden until JS adds "is-visible" */
+@media (min-width: 1200px) {
+  aside.sticky-margin-generated:not(.is-visible) {
+    display: none !important;
+  }
+
+  aside.sticky-margin-generated.is-preparing,
+  aside.sticky-margin-generated.is-visible {
+    display: block !important;
+    position: sticky !important;
+    top: var(--pst-header-height, 4rem);
+    max-height: calc(100vh - var(--pst-header-height, 4rem));
+    overflow-y: auto;
+  }
+
+  aside.sticky-margin-generated.is-preparing {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* Inside the secondary sidebar, keep sticky-margin figures in normal flow
+     so multiple figures get distinct final positions instead of overlapping
+     at the same sticky top offset. */
+  #pst-secondary-sidebar aside.sticky-margin-generated.is-preparing,
+  #pst-secondary-sidebar aside.sticky-margin-generated.is-visible {
+    position: static !important;
+    top: auto !important;
+  }
+}
+
+#pst-secondary-sidebar .sticky-margin-secondary-item {
+  display: block;
+  border-left: none !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
+
+.bd-sidebar-secondary .sidebar-secondary-items {
+  flex-direction: column;
+}
+
+.bd-sidebar-secondary {
+  max-height: 100vh;
+}
+
+/* Patch for secondary sidebar spacing from sphinx-book-theme:
+   https://github.com/executablebooks/sphinx-book-theme/blob/main/src/sphinx_book_theme/assets/styles/sections/_sidebar-secondary.scss */
+@media (min-width: 1200px) {
+  .bd-sidebar-secondary {
+    /* Remove padding so that it's flush on the top and left */
+    padding: 0 !important;
+  }
+}
+
+#pst-secondary-sidebar .sticky-margin-secondary-item::before {
+  display: none !important;
+  content: none !important;
+}
+
+#pst-secondary-sidebar .sticky-margin-secondary-item > aside.sticky-margin-generated {
+  width: 100%;
+  margin: 0 !important;
+}
+
+#pst-secondary-sidebar.sticky-margin-generated-sidebar aside.sticky-margin-generated > .sidebar-title {
+  display: block;
+  height: 48px;
+  margin: 0;
+  padding: 0;
+}
+
+.sticky-margin-flight {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1200;
+  margin: 0;
+  object-fit: contain;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  border-radius: 0.25rem;
+}
