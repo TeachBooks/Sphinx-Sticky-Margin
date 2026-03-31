@@ -14,6 +14,46 @@ document.addEventListener('DOMContentLoaded', function () {
     return null;
   }
 
+  function getDocsMainContent() {
+    var docsMain = document.querySelector('#main-content.bd-main, main.bd-main, .bd-main');
+    if (!docsMain) {
+      return null;
+    }
+
+    for (var i = 0; i < docsMain.children.length; i += 1) {
+      var child = docsMain.children[i];
+      if (child.classList && child.classList.contains('bd-content')) {
+        return child;
+      }
+    }
+
+    return docsMain.querySelector('.bd-content');
+  }
+
+  function insertGeneratedSidebar(sidebar) {
+    var bdContent = getDocsMainContent();
+    if (!bdContent) {
+      return false;
+    }
+
+    var articleContainer = null;
+    for (var i = 0; i < bdContent.children.length; i += 1) {
+      var child = bdContent.children[i];
+      if (child.classList && child.classList.contains('bd-article-container')) {
+        articleContainer = child;
+        break;
+      }
+    }
+
+    if (articleContainer) {
+      articleContainer.insertAdjacentElement('afterend', sidebar);
+    } else {
+      bdContent.appendChild(sidebar);
+    }
+
+    return true;
+  }
+
   document.querySelectorAll('.sticky-margin').forEach(function (marker) {
     var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -35,19 +75,19 @@ document.addEventListener('DOMContentLoaded', function () {
     var sidebar = document.querySelector('#pst-secondary-sidebar');
     var sidebarWasGenerated = false;
     if (!sidebar) {
-      var bdContent = document.querySelector('.bd-content');
-      if (bdContent) {
-        sidebar = document.createElement('div');
-        sidebar.id = 'pst-secondary-sidebar';
-        sidebar.className = 'bd-sidebar-secondary bd-toc';
-        sidebar.classList.add('sticky-margin-generated-sidebar');
+      sidebar = document.createElement('div');
+      sidebar.id = 'pst-secondary-sidebar';
+      sidebar.className = 'bd-sidebar-secondary bd-toc';
+      sidebar.classList.add('sticky-margin-generated-sidebar');
+
+      var sidebarItems = document.createElement('div');
+      sidebarItems.className = 'sidebar-secondary-items sidebar-secondary__inner';
+      sidebar.appendChild(sidebarItems);
+
+      if (insertGeneratedSidebar(sidebar)) {
         sidebarWasGenerated = true;
-
-        var sidebarItems = document.createElement('div');
-        sidebarItems.className = 'sidebar-secondary-items sidebar-secondary__inner';
-        sidebar.appendChild(sidebarItems);
-
-        bdContent.appendChild(sidebar);
+      } else {
+        sidebar = null;
       }
     }
 
