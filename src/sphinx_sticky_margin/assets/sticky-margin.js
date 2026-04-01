@@ -318,14 +318,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
       currentFlightAnimation = animation;
 
-      function finalize() {
+      function cleanup() {
         clone.remove();
         currentFlightAnimation = null;
+      }
+
+      function handleFinish() {
+        cleanup();
         onComplete();
       }
 
-      animation.addEventListener('finish', finalize);
-      animation.addEventListener('cancel', finalize);
+      function handleCancel() {
+        cleanup();
+      }
+
+      animation.addEventListener('finish', handleFinish, { once: true });
+      animation.addEventListener('cancel', handleCancel, { once: true });
     }
 
     function isFigureRenderedAndVisible() {
@@ -473,12 +481,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function hideStickyMargin() {
-      if (!aside.classList.contains('is-visible')) {
+      if (!aside.classList.contains('is-visible') && !aside.classList.contains('is-preparing')) {
         return;
       }
 
       cancelPendingHide();
       cancelCurrentFlight();
+
+      if (aside.classList.contains('is-preparing')) {
+        aside.classList.remove('is-preparing');
+        aside.classList.remove('is-visible');
+        aside.style.opacity = '1';
+        return;
+      }
 
       if (prefersReducedMotion || !sourceImage || !targetImage || window.innerWidth < 1200) {
         aside.classList.remove('is-visible');
