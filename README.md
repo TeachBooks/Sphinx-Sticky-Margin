@@ -1,8 +1,8 @@
 # Sphinx Sticky Margin
 
-`sphinx-sticky-margin` is a Sphinx extension that adds a sticky margin copy for figures marked with the `:class: sticky-margin` option.
+`sphinx-sticky-margin` is a Sphinx extension that adds a sticky margin copy for images, figures and other elements marked using the class `sticky-margin`.
 
-When the original figure scrolls above the header, a duplicate appears in the right margin (on wide screens). When the original figure comes back into view, the margin copy is hidden.
+When the original element scrolls above the header, a duplicate appears in the right margin (on wide screens). When the original element comes back into view, the margin copy is hidden.
 
 ## Installation
 
@@ -30,23 +30,27 @@ sphinx:
 
 ## Usage
 
-Add the `:class: sticky-margin` class to figures that should get a sticky margin clone.
+Add the option `:figclass: sticky-margin` to a `figure` directive that should get a sticky margin clone. (For backward compatibility, `:class: sticky-margin` also works for `figure` directives.)
 
-Insert a `hide-sticky-margin` directive to insert a marker after which to fade out the last sticky figure during scrolling.
+Add the option `:class: sticky-margin` to a directive that generates an HTML `<div>` element that should get a sticky margin clone.
 
-The sticky margin figure will appear when the original figure scrolls out of view, and will disappear when the original figure comes back into view.
+Add the option `:class: sticky-margin` to a `image` directive that should get a sticky margin clone.
 
-In case of multiple sticky margin figures, all will be shown in the margin.
+Insert a `hide-sticky-margin` directive to insert a marker after which to fade out the last sticky elements during scrolling.
 
-If a hide marker scrolls out of view at the top when scrolling down, all sticky figures defined before that marker will be hidden.
+The sticky margin elements will appear when the original element scrolls out of view, and will disappear when the original element comes back into view.
 
-When scrolling back up, the sticky margin figures above a hide marker (but after any previous hide marker) will reappear when that hide marker scrolls back below the header.
+In case of multiple sticky margin elements, all will be shown in the margin.
+
+If a hide marker scrolls out of view at the top when scrolling down, all sticky elements defined before that marker will be hidden.
+
+When scrolling back up, the sticky margin elements above a hide marker (but after any previous hide marker) will reappear when that hide marker scrolls back below the header.
 
 ### MyST Example
 
 ````md
 ```{figure} path/to/image.png
-:class: sticky-margin
+:figclass: sticky-margin
 
 Figure caption.
 ```
@@ -56,7 +60,7 @@ Figure caption.
 
 ```rst
 .. figure:: path/to/image.png
-   :class: sticky-margin
+   :figclass: sticky-margin
 
    Figure caption.
 ```
@@ -68,11 +72,29 @@ Figure caption.
 ```
 ````
 
-When the marker scrolls above the header, the previous sticky margin figure is hidden with a fade-out.
+### Images
+
+````md
+```{image} path/to/image.png
+:class: sticky-margin
+```
+````
+
+### Directives with `:class: sticky-margin`
+
+````md
+```{admonition} This is a sticky margin admonition
+:class: sticky-margin
+
+This content will appear in the sticky margin when the original element scrolls out of view.
+```
+````
+
+When the marker scrolls above the header, the previous sticky margin elements are hidden with a fade-out.
 
 ## Notes
 
 - The sticky margin display is active from `1200px` viewport width and up.
 - The extension injects `sticky-margin.css` and `sticky-margin.js`.
-- MathJax content inside sticky figures is re-typeset when needed.
+- MathJax content inside sticky elements is re-typeset when needed.
 - The extension removes explicit line endings (`<br>`, double space in markdown) from figure captions to prevent layout issues in the margin.

@@ -291,8 +291,8 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
 
-    var sourceImage = mainFigure.querySelector('.sticky-margin') || mainFigure.querySelector('img');
-    var targetImage = aside.querySelector('img');
+    var sourceFlightElement = mainFigure;
+    var targetFlightElement = aside.querySelector('figure') || aside.firstElementChild;
     var hideMarker = getNextHideMarker(mainFigure);
     var lastSourceRect = null;
     var currentFlightAnimation = null;
@@ -363,9 +363,9 @@ document.addEventListener('DOMContentLoaded', function () {
       return visibilityToken;
     }
 
-    function createFlightClone(image, rect) {
-      var clone = image.cloneNode(true);
-      clone.className = image.className;
+    function createFlightClone(element, rect) {
+      var clone = element.cloneNode(true);
+      clone.className = element.className;
       clone.classList.add('sticky-margin-flight');
       clone.style.left = rect.left + 'px';
       clone.style.top = rect.top + 'px';
@@ -451,9 +451,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function rememberSourceRect() {
-      if (!sourceImage || window.innerWidth < 1200 || !isFigureRenderedAndVisible()) return;
+      if (!sourceFlightElement || window.innerWidth < 1200 || !isFigureRenderedAndVisible()) return;
 
-      var rect = sourceImage.getBoundingClientRect();
+      var rect = sourceFlightElement.getBoundingClientRect();
       if (rect.bottom > 0 && rect.top < window.innerHeight && rect.width > 0 && rect.height > 0) {
         lastSourceRect = rect;
       }
@@ -557,8 +557,8 @@ document.addEventListener('DOMContentLoaded', function () {
       if (
         prefersReducedMotion ||
         !allowFlightAnimation ||
-        !sourceImage ||
-        !targetImage ||
+        !sourceFlightElement ||
+        !targetFlightElement ||
         !lastSourceRect ||
         window.innerWidth < 1200
       ) {
@@ -568,8 +568,8 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      aside.classList.add('is-preparing');
-      var targetRect = targetImage.getBoundingClientRect();
+        aside.classList.add('is-preparing');
+        var targetRect = targetFlightElement.getBoundingClientRect();
 
       if (targetRect.width === 0 || targetRect.height === 0) {
         aside.classList.remove('is-preparing');
@@ -579,7 +579,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      var clone = createFlightClone(sourceImage, lastSourceRect);
+      var clone = createFlightClone(sourceFlightElement, lastSourceRect);
 
       animateFlight(clone, lastSourceRect, targetRect, function () {
         if (showToken !== visibilityToken) {
@@ -606,7 +606,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
       cancelPendingHide();
       cancelCurrentFlight();
-
       if (aside.classList.contains('is-preparing')) {
         aside.classList.remove('is-preparing');
         aside.classList.remove('is-visible');
@@ -614,7 +613,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      if (prefersReducedMotion || !sourceImage || !targetImage || window.innerWidth < 1200) {
+      if (prefersReducedMotion || !sourceFlightElement || !targetFlightElement || window.innerWidth < 1200) {
         aside.classList.remove('is-visible');
         aside.style.opacity = '1';
         return;
