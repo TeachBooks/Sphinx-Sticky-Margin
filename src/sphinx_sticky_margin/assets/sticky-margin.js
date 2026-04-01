@@ -207,7 +207,15 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.sticky-margin').forEach(function (marker) {
     var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    var mainFigure = marker.tagName === 'FIGURE' ? marker : marker.closest('figure');
+    var mainFigure = marker;
+    if (marker.tagName === 'FIGURE') {
+      mainFigure = marker;
+    } else if (marker.tagName === 'DIV') {
+      // Allow standalone or nested div.sticky-margin blocks to be sticky on their own.
+      mainFigure = marker;
+    } else {
+      mainFigure = marker.closest('figure') || marker;
+    }
 
     if (!mainFigure || handledFigures.has(mainFigure)) return;
     handledFigures.add(mainFigure);
