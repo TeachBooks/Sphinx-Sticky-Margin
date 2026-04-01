@@ -54,6 +54,16 @@ document.addEventListener('DOMContentLoaded', function () {
     return true;
   }
 
+  function normalizeSidebarTextSpacing(root) {
+    if (!root) {
+      return;
+    }
+
+    root.querySelectorAll('br').forEach(function (lineBreak) {
+      lineBreak.replaceWith(document.createTextNode(' '));
+    });
+  }
+
   document.querySelectorAll('.sticky-margin').forEach(function (marker) {
     var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -67,6 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
     aside.innerHTML = '<p class="sidebar-title"></p>';
 
     var figureClone = mainFigure.cloneNode(true);
+    normalizeSidebarTextSpacing(figureClone);
     aside.appendChild(figureClone);
 
     // Prefer mounting in the same sidebar column as the local TOC.

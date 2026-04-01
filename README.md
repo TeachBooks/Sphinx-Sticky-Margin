@@ -75,3 +75,4 @@ When the marker scrolls above the header, the previous sticky margin figure is h
 - The sticky margin display is active from `1200px` viewport width and up.
 - The extension injects `sticky-margin.css` and `sticky-margin.js`.
 - MathJax content inside sticky figures is re-typeset when needed.
+- The extension removes explicit line endings (`<br>`, double space in markdown) from figure captions to prevent layout issues in the margin.
