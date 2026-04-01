@@ -142,7 +142,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var aside = document.createElement('aside');
     aside.className = 'sticky-margin sticky-margin-generated';
-    aside.innerHTML = '<p class="sidebar-title"></p>';
 
     var figureClone = mainFigure.cloneNode(true);
     normalizeSidebarTextSpacing(figureClone);
@@ -152,7 +151,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // If the page has no local TOC/sidebar, create the normal secondary
     // sidebar container and mount the sticky figure there.
     var sidebar = document.querySelector('#pst-secondary-sidebar');
-    var sidebarWasGenerated = false;
     if (!sidebar) {
       sidebar = document.createElement('div');
       sidebar.id = 'pst-secondary-sidebar';
@@ -163,9 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
       sidebarItems.className = 'sidebar-secondary-items sidebar-secondary__inner';
       sidebar.appendChild(sidebarItems);
 
-      if (insertGeneratedSidebar(sidebar)) {
-        sidebarWasGenerated = true;
-      } else {
+      if (!insertGeneratedSidebar(sidebar)) {
         sidebar = null;
       }
     }
@@ -177,6 +173,12 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!stickyList) {
         stickyList = document.createElement('div');
         stickyList.className = 'sticky-margin-secondary-list';
+
+        if (sidebar.classList.contains('sticky-margin-generated-sidebar')) {
+          var generatedTitleSpacer = document.createElement('div');
+          generatedTitleSpacer.className = 'sticky-margin-generated-title-spacer';
+          stickyList.appendChild(generatedTitleSpacer);
+        }
 
         if (tocItem && tocItem.parentElement === sidebarInner) {
           tocItem.insertAdjacentElement('afterend', stickyList);
@@ -196,13 +198,6 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       reorderStickySidebarItems();
 
-      // For existing sidebars, remove title spacer so there is no extra whitespace.
-      if (!sidebarWasGenerated) {
-        var titleEl = aside.querySelector('.sidebar-title');
-        if (titleEl) {
-          titleEl.remove();
-        }
-      }
     } else {
       // Fallback for layouts without a secondary sidebar.
       var articleEl = document.querySelector('.bd-article') || document.body;

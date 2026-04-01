@@ -73,7 +73,7 @@
   margin: 0 !important;
 }
 
-#pst-secondary-sidebar.sticky-margin-generated-sidebar aside.sticky-margin-generated > .sidebar-title {
+#pst-secondary-sidebar.sticky-margin-generated-sidebar .sticky-margin-generated-title-spacer {
   display: block;
   height: 48px;
   margin: 0;
