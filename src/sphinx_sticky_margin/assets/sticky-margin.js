@@ -7,6 +7,12 @@ document.addEventListener('DOMContentLoaded', function () {
   var hideMarkers = Array.prototype.slice.call(
     document.querySelectorAll('.hide-sticky-margin-marker')
   );
+  var stickyTriggerMode = (
+    typeof stickyMarginTrigger === 'string' ? stickyMarginTrigger.toLowerCase() : 'full'
+  );
+  if (stickyTriggerMode !== 'partial' && stickyTriggerMode !== 'full') {
+    stickyTriggerMode = 'full';
+  }
 
   function compareFigureDocumentOrder(a, b) {
     if (a === b) {
@@ -499,7 +505,10 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       var rect = mainFigure.getBoundingClientRect();
-      if (rect.bottom >= headerHeight) {
+      var isAboveHeaderThreshold = stickyTriggerMode === 'partial'
+        ? rect.top < headerHeight
+        : rect.bottom < headerHeight;
+      if (!isAboveHeaderThreshold) {
         return false;
       }
 
@@ -646,7 +655,10 @@ document.addEventListener('DOMContentLoaded', function () {
       rememberSourceRect();
       updateStickyTopOffset();
 
-      if (aside.classList.contains('is-preparing') || aside.classList.contains('is-visible')) {
+      var shouldEvaluateOnScroll = stickyTriggerMode === 'partial' ||
+        aside.classList.contains('is-preparing') ||
+        aside.classList.contains('is-visible');
+      if (shouldEvaluateOnScroll) {
         evaluateStickyVisibility();
       }
     }, { passive: true });
