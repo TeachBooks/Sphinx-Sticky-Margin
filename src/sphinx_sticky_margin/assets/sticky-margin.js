@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', function () {
   var handledFigures = new WeakSet();
   var stickySidebarEntries = [];
+  var stickyVisibilityEvaluators = [];
+  var layoutObserversInitialized = false;
+  var layoutRecheckFrameId = null;
   var hideMarkers = Array.prototype.slice.call(
     document.querySelectorAll('.hide-sticky-margin-marker')
   );
@@ -70,6 +73,75 @@ document.addEventListener('DOMContentLoaded', function () {
         entry.stickyItem.parentElement.appendChild(entry.stickyItem);
       }
     });
+  }
+
+  function scheduleGlobalLayoutRecheck() {
+    if (layoutRecheckFrameId !== null) {
+      return;
+    }
+
+    layoutRecheckFrameId = requestAnimationFrame(function () {
+      layoutRecheckFrameId = null;
+      reorderStickySidebarItems();
+
+      stickyVisibilityEvaluators.forEach(function (evaluate) {
+        evaluate();
+      });
+    });
+  }
+
+  function setupLayoutObserversOnce() {
+    if (layoutObserversInitialized) {
+      return;
+    }
+
+    layoutObserversInitialized = true;
+
+    window.addEventListener('resize', function () {
+      scheduleGlobalLayoutRecheck();
+    });
+
+    if (window.ResizeObserver) {
+      var layoutResizeObserver = new ResizeObserver(function () {
+        scheduleGlobalLayoutRecheck();
+      });
+
+      var resizeTargets = [
+        document.querySelector('.bd-header-article') || document.querySelector('header'),
+        document.querySelector('#pst-primary-sidebar'),
+        document.querySelector('#pst-secondary-sidebar'),
+        document.querySelector('.bd-main')
+      ];
+
+      resizeTargets.forEach(function (target) {
+        if (target) {
+          layoutResizeObserver.observe(target);
+        }
+      });
+    }
+
+    if (window.MutationObserver) {
+      var layoutMutationObserver = new MutationObserver(function () {
+        scheduleGlobalLayoutRecheck();
+      });
+
+      [
+        document.documentElement,
+        document.body,
+        document.querySelector('.bd-header-article') || document.querySelector('header'),
+        document.querySelector('#pst-primary-sidebar'),
+        document.querySelector('#pst-secondary-sidebar')
+      ].forEach(function (target) {
+        if (!target) {
+          return;
+        }
+
+        layoutMutationObserver.observe(target, {
+          attributes: true,
+          attributeFilter: ['class', 'style', 'hidden', 'aria-expanded', 'aria-hidden']
+        });
+      });
+    }
   }
 
   function getNextHideMarker(mainFigure) {
@@ -224,7 +296,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var hideMarker = getNextHideMarker(mainFigure);
     var lastSourceRect = null;
     var currentFlightAnimation = null;
+    var currentFlightClone = null;
     var hideTimeoutId = null;
+    var visibilityToken = 0;
     var allowFlightAnimation = false;
     var initialScrollY = window.scrollY;
     var lastScrollY = window.scrollY;
@@ -277,6 +351,16 @@ document.addEventListener('DOMContentLoaded', function () {
         currentFlightAnimation.cancel();
         currentFlightAnimation = null;
       }
+
+      if (currentFlightClone) {
+        currentFlightClone.remove();
+        currentFlightClone = null;
+      }
+    }
+
+    function invalidateVisibilityToken() {
+      visibilityToken += 1;
+      return visibilityToken;
     }
 
     function createFlightClone(image, rect) {
@@ -294,6 +378,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function animateFlight(clone, fromRect, toRect, onComplete) {
       cancelCurrentFlight();
+      currentFlightClone = clone;
 
       var animation = clone.animate([
         {
@@ -318,14 +403,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
       currentFlightAnimation = animation;
 
-      function finalize() {
+      function cleanup() {
         clone.remove();
         currentFlightAnimation = null;
+        if (currentFlightClone === clone) {
+          currentFlightClone = null;
+        }
+      }
+
+      function handleFinish() {
+        cleanup();
         onComplete();
       }
 
-      animation.addEventListener('finish', finalize);
-      animation.addEventListener('cancel', finalize);
+      function handleCancel() {
+        cleanup();
+      }
+
+      animation.addEventListener('finish', handleFinish, { once: true });
+      animation.addEventListener('cancel', handleCancel, { once: true });
     }
 
     function isFigureRenderedAndVisible() {
@@ -385,19 +481,34 @@ document.addEventListener('DOMContentLoaded', function () {
       aside.style.maxHeight = 'calc(100vh - ' + topOffset + 'px)';
     }
 
+    function hasHideMarkerPassedHeader() {
+      return !!(hideMarker && hideMarker.getBoundingClientRect().top < headerHeight);
+    }
+
+    function shouldShowStickyNow() {
+      if (window.innerWidth < 1200 || !isFigureRenderedAndVisible()) {
+        return false;
+      }
+
+      var rect = mainFigure.getBoundingClientRect();
+      if (rect.bottom >= headerHeight) {
+        return false;
+      }
+
+      if (hasHideMarkerPassedHeader()) {
+        return false;
+      }
+
+      return true;
+    }
+
     function evaluateStickyVisibility() {
       rememberSourceRect();
       updateStickyTopOffset();
 
-      var rect = mainFigure.getBoundingClientRect();
-      var markerPassedHeader = hideMarker && hideMarker.getBoundingClientRect().top < headerHeight;
+      var markerPassedHeader = hasHideMarkerPassedHeader();
       var crossedHideMarkerUpward = hideMarker && previousMarkerPassedHeader && !markerPassedHeader && isScrollingUp;
-      if (
-        window.innerWidth >= 1200 &&
-        isFigureRenderedAndVisible() &&
-        rect.bottom < headerHeight &&
-        !markerPassedHeader
-      ) {
+      if (shouldShowStickyNow()) {
         showStickyMargin(crossedHideMarkerUpward);
       } else {
         hideStickyMargin();
@@ -412,6 +523,11 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
+      // Avoid re-entrant transitions while a flight animation is preparing.
+      if (aside.classList.contains('is-preparing')) {
+        return;
+      }
+
       updateStickyTopOffset();
 
       if (aside.classList.contains('is-visible')) {
@@ -423,6 +539,7 @@ document.addEventListener('DOMContentLoaded', function () {
       cancelPendingHide();
       cancelCurrentFlight();
       aside.style.opacity = '1';
+      var showToken = invalidateVisibilityToken();
 
       if (useFadeIn) {
         ensureMathVisible();
@@ -465,6 +582,14 @@ document.addEventListener('DOMContentLoaded', function () {
       var clone = createFlightClone(sourceImage, lastSourceRect);
 
       animateFlight(clone, lastSourceRect, targetRect, function () {
+        if (showToken !== visibilityToken) {
+          return;
+        }
+
+        if (!shouldShowStickyNow()) {
+          return;
+        }
+
         aside.classList.remove('is-preparing');
         ensureMathVisible();
         aside.classList.add('is-visible');
@@ -473,12 +598,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function hideStickyMargin() {
-      if (!aside.classList.contains('is-visible')) {
+      if (!aside.classList.contains('is-visible') && !aside.classList.contains('is-preparing')) {
         return;
       }
 
+      invalidateVisibilityToken();
+
       cancelPendingHide();
       cancelCurrentFlight();
+
+      if (aside.classList.contains('is-preparing')) {
+        aside.classList.remove('is-preparing');
+        aside.classList.remove('is-visible');
+        aside.style.opacity = '1';
+        return;
+      }
 
       if (prefersReducedMotion || !sourceImage || !targetImage || window.innerWidth < 1200) {
         aside.classList.remove('is-visible');
@@ -504,13 +638,16 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       rememberSourceRect();
       updateStickyTopOffset();
+
+      if (aside.classList.contains('is-preparing') || aside.classList.contains('is-visible')) {
+        evaluateStickyVisibility();
+      }
     }, { passive: true });
-    window.addEventListener('resize', function () {
-      rememberSourceRect();
-      updateStickyTopOffset();
-      reorderStickySidebarItems();
+
+    stickyVisibilityEvaluators.push(function () {
       evaluateStickyVisibility();
     });
+    setupLayoutObserversOnce();
 
     if (window.ResizeObserver) {
       var figureResizeObserver = new ResizeObserver(function () {
@@ -524,23 +661,11 @@ document.addEventListener('DOMContentLoaded', function () {
     previousMarkerPassedHeader = hideMarker ? hideMarker.getBoundingClientRect().top < headerHeight : false;
 
     var observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        rememberSourceRect();
-        updateStickyTopOffset();
+      if (!entries.length) {
+        return;
+      }
 
-        if (window.innerWidth < 1200 || !isFigureRenderedAndVisible()) {
-          hideStickyMargin();
-          return;
-        }
-
-        if (entry.isIntersecting) {
-          // Figure came back into view - hide margin
-          hideStickyMargin();
-        } else if (entry.boundingClientRect.bottom < headerHeight) {
-          // Figure scrolled above header - show margin
-          showStickyMargin(false);
-        }
-      });
+      evaluateStickyVisibility();
     }, { threshold: 0, rootMargin: '-' + headerHeight + 'px 0px 0px 0px' });
 
     observer.observe(mainFigure);

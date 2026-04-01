@@ -22,6 +22,7 @@
     top: var(--pst-header-height, 4rem);
     max-height: calc(100vh - var(--pst-header-height, 4rem));
     overflow-y: auto;
+    scrollbar-gutter: stable;
   }
 
   aside.sticky-margin-generated.is-preparing {
@@ -52,6 +53,7 @@
 
 .bd-sidebar-secondary {
   max-height: 100vh;
+  scrollbar-gutter: stable;
 }
 
 /* Patch for secondary sidebar spacing from sphinx-book-theme:
