@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', function () {
   var handledFigures = new WeakSet();
   var stickySidebarEntries = [];
+  var stickyVisibilityEvaluators = [];
+  var layoutObserversInitialized = false;
+  var layoutRecheckFrameId = null;
   var hideMarkers = Array.prototype.slice.call(
     document.querySelectorAll('.hide-sticky-margin-marker')
   );
@@ -70,6 +73,75 @@ document.addEventListener('DOMContentLoaded', function () {
         entry.stickyItem.parentElement.appendChild(entry.stickyItem);
       }
     });
+  }
+
+  function scheduleGlobalLayoutRecheck() {
+    if (layoutRecheckFrameId !== null) {
+      return;
+    }
+
+    layoutRecheckFrameId = requestAnimationFrame(function () {
+      layoutRecheckFrameId = null;
+      reorderStickySidebarItems();
+
+      stickyVisibilityEvaluators.forEach(function (evaluate) {
+        evaluate();
+      });
+    });
+  }
+
+  function setupLayoutObserversOnce() {
+    if (layoutObserversInitialized) {
+      return;
+    }
+
+    layoutObserversInitialized = true;
+
+    window.addEventListener('resize', function () {
+      scheduleGlobalLayoutRecheck();
+    });
+
+    if (window.ResizeObserver) {
+      var layoutResizeObserver = new ResizeObserver(function () {
+        scheduleGlobalLayoutRecheck();
+      });
+
+      var resizeTargets = [
+        document.querySelector('.bd-header-article') || document.querySelector('header'),
+        document.querySelector('#pst-primary-sidebar'),
+        document.querySelector('#pst-secondary-sidebar'),
+        document.querySelector('.bd-main')
+      ];
+
+      resizeTargets.forEach(function (target) {
+        if (target) {
+          layoutResizeObserver.observe(target);
+        }
+      });
+    }
+
+    if (window.MutationObserver) {
+      var layoutMutationObserver = new MutationObserver(function () {
+        scheduleGlobalLayoutRecheck();
+      });
+
+      [
+        document.documentElement,
+        document.body,
+        document.querySelector('.bd-header-article') || document.querySelector('header'),
+        document.querySelector('#pst-primary-sidebar'),
+        document.querySelector('#pst-secondary-sidebar')
+      ].forEach(function (target) {
+        if (!target) {
+          return;
+        }
+
+        layoutMutationObserver.observe(target, {
+          attributes: true,
+          attributeFilter: ['class', 'style', 'hidden', 'aria-expanded', 'aria-hidden']
+        });
+      });
+    }
   }
 
   function getNextHideMarker(mainFigure) {
@@ -571,12 +643,11 @@ document.addEventListener('DOMContentLoaded', function () {
         evaluateStickyVisibility();
       }
     }, { passive: true });
-    window.addEventListener('resize', function () {
-      rememberSourceRect();
-      updateStickyTopOffset();
-      reorderStickySidebarItems();
+
+    stickyVisibilityEvaluators.push(function () {
       evaluateStickyVisibility();
     });
+    setupLayoutObserversOnce();
 
     if (window.ResizeObserver) {
       var figureResizeObserver = new ResizeObserver(function () {
