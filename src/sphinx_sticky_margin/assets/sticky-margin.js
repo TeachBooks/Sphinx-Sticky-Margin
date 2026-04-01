@@ -59,20 +59,9 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-    var textNode;
-
-    while ((textNode = walker.nextNode())) {
-      if (!textNode.parentElement) {
-        continue;
-      }
-
-      if (textNode.parentElement.closest('pre, code, kbd, samp, script, style, textarea, .math, mjx-container')) {
-        continue;
-      }
-
-      textNode.nodeValue = textNode.nodeValue.replace(/ {2,}/g, ' ');
-    }
+    root.querySelectorAll('br').forEach(function (lineBreak) {
+      lineBreak.replaceWith(document.createTextNode(' '));
+    });
   }
 
   document.querySelectorAll('.sticky-margin').forEach(function (marker) {
