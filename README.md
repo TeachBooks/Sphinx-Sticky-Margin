@@ -4,6 +4,7 @@
 
 When the original element scrolls above the header, a duplicate appears in the right margin (on wide screens). When the original element comes back into view, the margin copy is hidden.
 
+<!-- Install start -->
 ## Installation
 
 ```bash

@@ -70,7 +70,7 @@ This content will appear in the sticky margin when the original element scrolls 
 ```
 
 ::::{include} README.md
-:start-after: "## Installation"
+:start-after: "<!-- Install start -->"
 ::::
 
 ## Additional content
