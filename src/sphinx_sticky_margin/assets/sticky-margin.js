@@ -1,8 +1,76 @@
 document.addEventListener('DOMContentLoaded', function () {
   var handledFigures = new WeakSet();
+  var stickySidebarEntries = [];
   var hideMarkers = Array.prototype.slice.call(
     document.querySelectorAll('.hide-sticky-margin-marker')
   );
+
+  function compareFigureDocumentOrder(a, b) {
+    if (a === b) {
+      return 0;
+    }
+
+    var position = a.compareDocumentPosition(b);
+    if (position & Node.DOCUMENT_POSITION_FOLLOWING) {
+      return -1;
+    }
+    if (position & Node.DOCUMENT_POSITION_PRECEDING) {
+      return 1;
+    }
+
+    return 0;
+  }
+
+  function getFigureSortMetrics(figure) {
+    var rect = figure.getBoundingClientRect();
+    var scrollX = window.scrollX || window.pageXOffset || 0;
+    var scrollY = window.scrollY || window.pageYOffset || 0;
+
+    return {
+      // Sticky activation uses figure bottom crossing the header, so bottom Y is
+      // the most natural ordering key for rendered behavior.
+      bottom: rect.bottom + scrollY,
+      top: rect.top + scrollY,
+      left: rect.left + scrollX,
+      height: rect.height,
+      width: rect.width
+    };
+  }
+
+  function reorderStickySidebarItems() {
+    if (!stickySidebarEntries.length) {
+      return;
+    }
+
+    var sortedEntries = stickySidebarEntries.slice().sort(function (a, b) {
+      var aMetrics = getFigureSortMetrics(a.mainFigure);
+      var bMetrics = getFigureSortMetrics(b.mainFigure);
+
+      if (aMetrics.bottom !== bMetrics.bottom) {
+        return aMetrics.bottom - bMetrics.bottom;
+      }
+      if (aMetrics.top !== bMetrics.top) {
+        return aMetrics.top - bMetrics.top;
+      }
+      if (aMetrics.left !== bMetrics.left) {
+        return aMetrics.left - bMetrics.left;
+      }
+      if (aMetrics.height !== bMetrics.height) {
+        return aMetrics.height - bMetrics.height;
+      }
+      if (aMetrics.width !== bMetrics.width) {
+        return aMetrics.width - bMetrics.width;
+      }
+
+      return compareFigureDocumentOrder(a.mainFigure, b.mainFigure);
+    });
+
+    sortedEntries.forEach(function (entry) {
+      if (entry.stickyItem && entry.stickyItem.parentElement) {
+        entry.stickyItem.parentElement.appendChild(entry.stickyItem);
+      }
+    });
+  }
 
   function getNextHideMarker(mainFigure) {
     for (var i = 0; i < hideMarkers.length; i += 1) {
@@ -121,6 +189,12 @@ document.addEventListener('DOMContentLoaded', function () {
       stickyItem.className = 'sidebar-secondary-item sticky-margin-secondary-item';
       stickyItem.appendChild(aside);
       stickyList.appendChild(stickyItem);
+
+      stickySidebarEntries.push({
+        mainFigure: mainFigure,
+        stickyItem: stickyItem
+      });
+      reorderStickySidebarItems();
 
       // For existing sidebars, remove title spacer so there is no extra whitespace.
       if (!sidebarWasGenerated) {
@@ -439,8 +513,16 @@ document.addEventListener('DOMContentLoaded', function () {
     window.addEventListener('resize', function () {
       rememberSourceRect();
       updateStickyTopOffset();
+      reorderStickySidebarItems();
       evaluateStickyVisibility();
     });
+
+    if (window.ResizeObserver) {
+      var figureResizeObserver = new ResizeObserver(function () {
+        reorderStickySidebarItems();
+      });
+      figureResizeObserver.observe(mainFigure);
+    }
 
     var headerEl = document.querySelector('.bd-header-article') || document.querySelector('header');
     var headerHeight = headerEl ? headerEl.offsetHeight : 0;
@@ -477,6 +559,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     window.addEventListener('load', function () {
+      reorderStickySidebarItems();
       evaluateStickyVisibility();
 
       if (aside.classList.contains('is-visible')) {
