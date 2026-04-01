@@ -54,6 +54,27 @@ document.addEventListener('DOMContentLoaded', function () {
     return true;
   }
 
+  function normalizeSidebarTextSpacing(root) {
+    if (!root) {
+      return;
+    }
+
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    var textNode;
+
+    while ((textNode = walker.nextNode())) {
+      if (!textNode.parentElement) {
+        continue;
+      }
+
+      if (textNode.parentElement.closest('pre, code, kbd, samp, script, style, textarea, .math, mjx-container')) {
+        continue;
+      }
+
+      textNode.nodeValue = textNode.nodeValue.replace(/ {2,}/g, ' ');
+    }
+  }
+
   document.querySelectorAll('.sticky-margin').forEach(function (marker) {
     var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -67,6 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
     aside.innerHTML = '<p class="sidebar-title"></p>';
 
     var figureClone = mainFigure.cloneNode(true);
+    normalizeSidebarTextSpacing(figureClone);
     aside.appendChild(figureClone);
 
     // Prefer mounting in the same sidebar column as the local TOC.
