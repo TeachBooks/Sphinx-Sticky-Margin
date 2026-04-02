@@ -213,6 +213,12 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.sticky-margin').forEach(function (marker) {
     var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    if (marker.classList && marker.classList.contains('dropdown')) {
+      marker.classList.remove('sticky-margin');
+      console.log('Warning: Element with both "sticky-margin" and "dropdown" classes found. "sticky-margin" class has been removed to avoid conflicts between behaviors.', marker);
+      return;
+    }
+
     var mainFigure = marker;
     if (marker.tagName === 'FIGURE') {
       mainFigure = marker;
