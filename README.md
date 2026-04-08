@@ -74,8 +74,22 @@ sphinx:
 
 If any value other than `partial` or `full` is set, the extension will fall back to the default `full` mode with a warning.
 
- > [!CAUTION]
- > The order of the elements in the margin is determined by the order in which they are present in the DOM, however the trigger works on the actual rendered position of the original element. This means that if two elements are visually side-by-side, but if the second DOM element ends/starts higher in the rendering, the second element will trigger before the first one. As soon as the first DOM element also causes the trigger, both elements will be shown in the margin, and the order of the elements in the margin will be determined by their order in the DOM, which cause the margin element of the second DOM element to be "pushed down" by the margin element of the first DOM element.
+The order of the elements in the margin is determined by the order in which they are rendered and the trigger works on the actual rendered position of the original element. For `full` trigger mode, the sort order is:
+1. bottom (smallest first)
+2. top (smallest first)
+3. left (smallest first)
+4. height (smallest first)
+5. width (smallest first)
+6. DOM order (fallback)
+
+For `partial` trigger mode, the sort order is:
+
+1. top (smallest first)
+2. bottom (smallest first)
+3. left (smallest first)
+4. height (smallest first)
+5. width (smallest first)
+6. DOM order (fallback)
 
   > [!NOTE]
  > The combination of `:class: sticky-margin, dropdown` is not supported, as the dropdown behavior conflicts with the sticky margin behavior. If both classes are present, the `sticky-margin` class will be removed and a warning will be issued in the console.
