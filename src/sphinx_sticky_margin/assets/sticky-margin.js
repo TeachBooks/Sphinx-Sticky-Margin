@@ -367,7 +367,11 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       if (currentFlightClone) {
+        var flightWrapper = currentFlightClone.parentElement;
         currentFlightClone.remove();
+        if (flightWrapper && flightWrapper.classList.contains('sticky-margin-flight-context')) {
+          flightWrapper.remove();
+        }
         currentFlightClone = null;
       }
     }
@@ -386,7 +390,17 @@ document.addEventListener('DOMContentLoaded', function () {
       clone.style.width = rect.width + 'px';
       clone.style.height = rect.height + 'px';
       clone.style.boxShadow = 'none';
-      document.body.appendChild(clone);
+
+      // Wrap in a sidebar context element so that CSS rules scoped to
+      // .bd-sidebar-secondary (e.g. font-size) cascade into the clone
+      // during the flight animation.
+      var sidebarEl = document.querySelector('#pst-secondary-sidebar');
+      var contextClasses = sidebarEl ? sidebarEl.className : 'bd-sidebar-secondary bd-toc';
+      var wrapper = document.createElement('div');
+      wrapper.className = contextClasses + ' sticky-margin-flight-context';
+      wrapper.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;overflow:visible;pointer-events:none;';
+      wrapper.appendChild(clone);
+      document.body.appendChild(wrapper);
       return clone;
     }
 
@@ -418,7 +432,11 @@ document.addEventListener('DOMContentLoaded', function () {
       currentFlightAnimation = animation;
 
       function cleanup() {
+        var flightWrapper = clone.parentElement;
         clone.remove();
+        if (flightWrapper && flightWrapper.classList.contains('sticky-margin-flight-context')) {
+          flightWrapper.remove();
+        }
         currentFlightAnimation = null;
         if (currentFlightClone === clone) {
           currentFlightClone = null;
