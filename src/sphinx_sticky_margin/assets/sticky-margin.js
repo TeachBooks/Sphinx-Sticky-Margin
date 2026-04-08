@@ -7,6 +7,12 @@ document.addEventListener('DOMContentLoaded', function () {
   var hideMarkers = Array.prototype.slice.call(
     document.querySelectorAll('.hide-sticky-margin-marker')
   );
+  var stickyTriggerMode = (
+    typeof stickyMarginTrigger === 'string' ? stickyMarginTrigger.toLowerCase() : 'full'
+  );
+  if (stickyTriggerMode !== 'partial' && stickyTriggerMode !== 'full') {
+    stickyTriggerMode = 'full';
+  }
 
   function compareFigureDocumentOrder(a, b) {
     if (a === b) {
@@ -30,7 +36,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var scrollY = window.scrollY || window.pageYOffset || 0;
 
     return {
-      // Sticky activation uses figure bottom crossing the header, so bottom Y is
+      // Sticky activation uses figure bottom (in full trigger mode) or top (in partial trigger mode)
+      // crossing the header, so bottom Y or top Y, respectively, is
       // the most natural ordering key for rendered behavior.
       bottom: rect.bottom + scrollY,
       top: rect.top + scrollY,
@@ -49,11 +56,21 @@ document.addEventListener('DOMContentLoaded', function () {
       var aMetrics = getFigureSortMetrics(a.mainFigure);
       var bMetrics = getFigureSortMetrics(b.mainFigure);
 
-      if (aMetrics.bottom !== bMetrics.bottom) {
-        return aMetrics.bottom - bMetrics.bottom;
+      if (stickyTriggerMode === 'full') {
+        if (aMetrics.bottom !== bMetrics.bottom) {
+          return aMetrics.bottom - bMetrics.bottom;
+        }
+        if (aMetrics.top !== bMetrics.top) {
+          return aMetrics.top - bMetrics.top;
+        }
       }
-      if (aMetrics.top !== bMetrics.top) {
-        return aMetrics.top - bMetrics.top;
+      if (stickyTriggerMode === 'partial') {
+        if (aMetrics.top !== bMetrics.top) {
+          return aMetrics.top - bMetrics.top;
+        }
+        if (aMetrics.bottom !== bMetrics.bottom) {
+          return aMetrics.bottom - bMetrics.bottom;
+        }
       }
       if (aMetrics.left !== bMetrics.left) {
         return aMetrics.left - bMetrics.left;
@@ -207,7 +224,21 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.sticky-margin').forEach(function (marker) {
     var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    var mainFigure = marker.tagName === 'FIGURE' ? marker : marker.closest('figure');
+    if (marker.classList && marker.classList.contains('dropdown')) {
+      marker.classList.remove('sticky-margin');
+      console.log('Warning: Element with both "sticky-margin" and "dropdown" classes found. "sticky-margin" class has been removed to avoid conflicts between behaviors.', marker);
+      return;
+    }
+
+    var mainFigure = marker;
+    if (marker.tagName === 'FIGURE') {
+      mainFigure = marker;
+    } else if (marker.tagName === 'DIV') {
+      // Allow standalone or nested div.sticky-margin blocks to be sticky on their own.
+      mainFigure = marker;
+    } else {
+      mainFigure = marker.closest('figure') || marker;
+    }
 
     if (!mainFigure || handledFigures.has(mainFigure)) return;
     handledFigures.add(mainFigure);
@@ -291,8 +322,8 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
 
-    var sourceImage = mainFigure.querySelector('.sticky-margin') || mainFigure.querySelector('img');
-    var targetImage = aside.querySelector('img');
+    var sourceFlightElement = mainFigure;
+    var targetFlightElement = aside.querySelector('figure') || aside.firstElementChild;
     var hideMarker = getNextHideMarker(mainFigure);
     var lastSourceRect = null;
     var currentFlightAnimation = null;
@@ -353,7 +384,11 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       if (currentFlightClone) {
+        var flightWrapper = currentFlightClone.parentElement;
         currentFlightClone.remove();
+        if (flightWrapper && flightWrapper.classList.contains('sticky-margin-flight-context')) {
+          flightWrapper.remove();
+        }
         currentFlightClone = null;
       }
     }
@@ -363,16 +398,26 @@ document.addEventListener('DOMContentLoaded', function () {
       return visibilityToken;
     }
 
-    function createFlightClone(image, rect) {
-      var clone = image.cloneNode(true);
-      clone.className = image.className;
+    function createFlightClone(element, rect) {
+      var clone = element.cloneNode(true);
+      clone.className = element.className;
       clone.classList.add('sticky-margin-flight');
       clone.style.left = rect.left + 'px';
       clone.style.top = rect.top + 'px';
       clone.style.width = rect.width + 'px';
       clone.style.height = rect.height + 'px';
       clone.style.boxShadow = 'none';
-      document.body.appendChild(clone);
+
+      // Wrap in a sidebar context element so that CSS rules scoped to
+      // .bd-sidebar-secondary (e.g. font-size) cascade into the clone
+      // during the flight animation.
+      var sidebarEl = document.querySelector('#pst-secondary-sidebar');
+      var contextClasses = sidebarEl ? sidebarEl.className : 'bd-sidebar-secondary bd-toc';
+      var wrapper = document.createElement('div');
+      wrapper.className = contextClasses + ' sticky-margin-flight-context';
+      wrapper.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;overflow:visible;pointer-events:none;';
+      wrapper.appendChild(clone);
+      document.body.appendChild(wrapper);
       return clone;
     }
 
@@ -404,7 +449,11 @@ document.addEventListener('DOMContentLoaded', function () {
       currentFlightAnimation = animation;
 
       function cleanup() {
+        var flightWrapper = clone.parentElement;
         clone.remove();
+        if (flightWrapper && flightWrapper.classList.contains('sticky-margin-flight-context')) {
+          flightWrapper.remove();
+        }
         currentFlightAnimation = null;
         if (currentFlightClone === clone) {
           currentFlightClone = null;
@@ -451,9 +500,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function rememberSourceRect() {
-      if (!sourceImage || window.innerWidth < 1200 || !isFigureRenderedAndVisible()) return;
+      if (!sourceFlightElement || window.innerWidth < 1200 || !isFigureRenderedAndVisible()) return;
 
-      var rect = sourceImage.getBoundingClientRect();
+      var rect = sourceFlightElement.getBoundingClientRect();
       if (rect.bottom > 0 && rect.top < window.innerHeight && rect.width > 0 && rect.height > 0) {
         lastSourceRect = rect;
       }
@@ -491,7 +540,10 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       var rect = mainFigure.getBoundingClientRect();
-      if (rect.bottom >= headerHeight) {
+      var isAboveHeaderThreshold = stickyTriggerMode === 'partial'
+        ? rect.top < headerHeight
+        : rect.bottom < headerHeight;
+      if (!isAboveHeaderThreshold) {
         return false;
       }
 
@@ -557,8 +609,8 @@ document.addEventListener('DOMContentLoaded', function () {
       if (
         prefersReducedMotion ||
         !allowFlightAnimation ||
-        !sourceImage ||
-        !targetImage ||
+        !sourceFlightElement ||
+        !targetFlightElement ||
         !lastSourceRect ||
         window.innerWidth < 1200
       ) {
@@ -568,8 +620,8 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      aside.classList.add('is-preparing');
-      var targetRect = targetImage.getBoundingClientRect();
+        aside.classList.add('is-preparing');
+        var targetRect = targetFlightElement.getBoundingClientRect();
 
       if (targetRect.width === 0 || targetRect.height === 0) {
         aside.classList.remove('is-preparing');
@@ -579,7 +631,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      var clone = createFlightClone(sourceImage, lastSourceRect);
+      var clone = createFlightClone(sourceFlightElement, lastSourceRect);
 
       animateFlight(clone, lastSourceRect, targetRect, function () {
         if (showToken !== visibilityToken) {
@@ -606,7 +658,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
       cancelPendingHide();
       cancelCurrentFlight();
-
       if (aside.classList.contains('is-preparing')) {
         aside.classList.remove('is-preparing');
         aside.classList.remove('is-visible');
@@ -614,7 +665,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      if (prefersReducedMotion || !sourceImage || !targetImage || window.innerWidth < 1200) {
+      if (prefersReducedMotion || !sourceFlightElement || !targetFlightElement || window.innerWidth < 1200) {
         aside.classList.remove('is-visible');
         aside.style.opacity = '1';
         return;
@@ -639,7 +690,10 @@ document.addEventListener('DOMContentLoaded', function () {
       rememberSourceRect();
       updateStickyTopOffset();
 
-      if (aside.classList.contains('is-preparing') || aside.classList.contains('is-visible')) {
+      var shouldEvaluateOnScroll = stickyTriggerMode === 'partial' ||
+        aside.classList.contains('is-preparing') ||
+        aside.classList.contains('is-visible');
+      if (shouldEvaluateOnScroll) {
         evaluateStickyVisibility();
       }
     }, { passive: true });

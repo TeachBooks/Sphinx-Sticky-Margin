@@ -13,21 +13,21 @@
 ```
 ````
 
-# Sticky Margin Figures
+# Sticky Margin Elements
 
 ::::{include} README.md
 :start-after: "# Sphinx Sticky Margin"
 :end-before: "## Installation"
 ::::
 
-## Example
+## Examples
 
-This example shows how to enable sticky margin behavior by adding the `class: sticky-margin` option to a figure.
+This example shows how to enable sticky margin behavior by adding the `:figclass: sticky-margin` option to a figure.
 
 ````md
 ```{figure} /images/TeachBooks_logo.svg
 :name: sticky_basic
-:class: sticky-margin
+:figclass: sticky-margin
 :width: 50%
 
 A figure that moves to the margin after it scrolls out of view.
@@ -36,30 +36,46 @@ A figure that moves to the margin after it scrolls out of view.
 
 ```{figure} /images/TeachBooks_logo.svg
 :name: sticky_basic
-:class: sticky-margin
+:figclass: sticky-margin
 :width: 50%
 
 A figure that moves to the margin after it scrolls out of view.
 ```
 
-Use a hide marker to stop showing all sticky figures after a specific point defined before that point:
+Use a hide marker to stop showing all sticky elements after a specific point defined before that point:
 
 ````md
 ```{hide-sticky-margin}
 ```
 ````
 
-When the hide marker scrolls out of view at the top when scrolling down, all sticky figures defined before that marker will be hidden.
+When the hide marker scrolls out of view at the top when scrolling down, all sticky elements defined before that marker will be hidden.
 
-When scrolling back up, the sticky margin figures above a hide marker (but after any previous hide marker) will reappear when that hide marker scrolls back below the header.
+When scrolling back up, the sticky margin elements above a hide marker (but after any previous hide marker) will reappear when that hide marker scrolls back below the header.
+
+The next code will generate a sticky margin admonition, showing that the sticky margin behavior is not limited to figures but can be applied to any directive that generates an HTML `<div>` element.
+
+````md
+```{admonition} This is a sticky margin admonition
+:class: sticky-margin
+
+This content will appear in the sticky margin when the original element scrolls out of view.
+```
+````
+
+```{admonition} This is a sticky margin admonition
+:class: sticky-margin
+
+This content will appear in the sticky margin when the original element scrolls out of view.
+```
 
 ::::{include} README.md
-:start-after: "## Installation"
+:start-after: "<!-- Install start -->"
 ::::
 
 ## Additional content
 
-The next content is only added to insert a `hide-sticky-margin` directive to insert a marker, and to show case the scrolling behavior of the sticky margin figures when the hide marker scrolls out of view.
+The next content is only added to insert a `hide-sticky-margin` directive to insert a marker, and to show case the scrolling behavior of the sticky margin elements when the hide marker scrolls out of view.
 
 First some filler code:
 
@@ -69,12 +85,12 @@ def add(a, b):
 ```
 ````
 
-Then the hide marker, which does not show up in the content but is used to hide the sticky margin figures when it scrolls out of view.
+Then the hide marker, which does not show up in the content but is used to hide the sticky margin elements when it scrolls out of view.
 
 ```{hide-sticky-margin}
 ```
 
-Just above this line the hide marker was added, so when you scroll down and this text reaches the top of the page, all sticky margin figures defined before this line will be hidden. When you scroll back up and this line scrolls back below the header, the sticky margin figures above this line (but after any previous hide marker) will reappear.
+Just above this line the hide marker was added, so when you scroll down and this text reaches the top of the page, all sticky margin elements defined before this line will be hidden. When you scroll back up and this line scrolls back below the header, the sticky margin elements above this line (but after any previous hide marker) will reappear.
 
 Now 10 paragraphs of lorem ipsum to make sure the hide marker scrolls out of view, generated with [Lorem Ipsum](https://www.lipsum.com/):
 
