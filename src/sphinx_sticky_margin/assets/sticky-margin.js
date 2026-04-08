@@ -36,7 +36,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var scrollY = window.scrollY || window.pageYOffset || 0;
 
     return {
-      // Sticky activation uses figure bottom crossing the header, so bottom Y is
+      // Sticky activation uses figure bottom (in full trigger mode) or top (in partial trigger mode)
+      // crossing the header, so bottom Y or top Y, respectively, is
       // the most natural ordering key for rendered behavior.
       bottom: rect.bottom + scrollY,
       top: rect.top + scrollY,
@@ -55,11 +56,21 @@ document.addEventListener('DOMContentLoaded', function () {
       var aMetrics = getFigureSortMetrics(a.mainFigure);
       var bMetrics = getFigureSortMetrics(b.mainFigure);
 
-      if (aMetrics.bottom !== bMetrics.bottom) {
-        return aMetrics.bottom - bMetrics.bottom;
+      if (stickyTriggerMode === 'full') {
+        if (aMetrics.bottom !== bMetrics.bottom) {
+          return aMetrics.bottom - bMetrics.bottom;
+        }
+        if (aMetrics.top !== bMetrics.top) {
+          return aMetrics.top - bMetrics.top;
+        }
       }
-      if (aMetrics.top !== bMetrics.top) {
-        return aMetrics.top - bMetrics.top;
+      if (stickyTriggerMode === 'partial') {
+        if (aMetrics.top !== bMetrics.top) {
+          return aMetrics.top - bMetrics.top;
+        }
+        if (aMetrics.bottom !== bMetrics.bottom) {
+          return aMetrics.bottom - bMetrics.bottom;
+        }
       }
       if (aMetrics.left !== bMetrics.left) {
         return aMetrics.left - bMetrics.left;
@@ -212,6 +223,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   document.querySelectorAll('.sticky-margin').forEach(function (marker) {
     var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (marker.classList && marker.classList.contains('dropdown')) {
+      marker.classList.remove('sticky-margin');
+      console.log('Warning: Element with both "sticky-margin" and "dropdown" classes found. "sticky-margin" class has been removed to avoid conflicts between behaviors.', marker);
+      return;
+    }
 
     var mainFigure = marker;
     if (marker.tagName === 'FIGURE') {

@@ -85,12 +85,12 @@ def add(a, b):
 ```
 ````
 
-Then the hide marker, which does not show up in the content but is used to hide the sticky margin figures when it scrolls out of view.
+Then the hide marker, which does not show up in the content but is used to hide the sticky margin elements when it scrolls out of view.
 
 ```{hide-sticky-margin}
 ```
 
-Just above this line the hide marker was added, so when you scroll down and this text reaches the top of the page, all sticky margin figures defined before this line will be hidden. When you scroll back up and this line scrolls back below the header, the sticky margin figures above this line (but after any previous hide marker) will reappear.
+Just above this line the hide marker was added, so when you scroll down and this text reaches the top of the page, all sticky margin elements defined before this line will be hidden. When you scroll back up and this line scrolls back below the header, the sticky margin elements above this line (but after any previous hide marker) will reappear.
 
 Now 10 paragraphs of lorem ipsum to make sure the hide marker scrolls out of view, generated with [Lorem Ipsum](https://www.lipsum.com/):
 
