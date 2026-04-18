@@ -82,7 +82,6 @@ First some filler code:
 ````python
 def add(a, b):
     return a + b
-```
 ````
 
 Then the hide marker, which does not show up in the content but is used to hide the sticky margin elements when it scrolls out of view.
