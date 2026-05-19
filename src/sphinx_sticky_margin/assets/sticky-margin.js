@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function findExistingSecondarySidebar() {
     var candidates = Array.prototype.slice.call(
-      document.querySelectorAll('#pst-secondary-sidebar, .bd-sidebar-secondary')
+      document.querySelectorAll('.bd-sidebar-secondary')
     );
 
     for (var i = 0; i < candidates.length; i += 1) {
@@ -279,7 +279,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var sidebar = getAnySecondarySidebar();
     if (!sidebar) {
       sidebar = document.createElement('div');
-      sidebar.id = 'pst-secondary-sidebar';
       sidebar.className = 'bd-sidebar-secondary bd-toc';
       sidebar.classList.add('sticky-margin-generated-sidebar');
 
