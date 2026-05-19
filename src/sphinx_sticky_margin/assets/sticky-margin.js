@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var resizeTargets = [
         document.querySelector('.bd-header-article') || document.querySelector('header'),
         document.querySelector('#pst-primary-sidebar'),
-        document.querySelector('#pst-secondary-sidebar'),
+        getAnySecondarySidebar(),
         document.querySelector('.bd-main')
       ];
 
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body,
         document.querySelector('.bd-header-article') || document.querySelector('header'),
         document.querySelector('#pst-primary-sidebar'),
-        document.querySelector('#pst-secondary-sidebar')
+        getAnySecondarySidebar()
       ].forEach(function (target) {
         if (!target) {
           return;
@@ -185,6 +185,29 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     return docsMain.querySelector('.bd-content');
+  }
+
+  function findExistingSecondarySidebar() {
+    var candidates = Array.prototype.slice.call(
+      document.querySelectorAll('#pst-secondary-sidebar, .bd-sidebar-secondary')
+    );
+
+    for (var i = 0; i < candidates.length; i += 1) {
+      var candidate = candidates[i];
+      if (!candidate.classList.contains('sticky-margin-generated-sidebar')) {
+        return candidate;
+      }
+    }
+
+    return null;
+  }
+
+  function findGeneratedSecondarySidebar() {
+    return document.querySelector('.sticky-margin-generated-sidebar');
+  }
+
+  function getAnySecondarySidebar() {
+    return findExistingSecondarySidebar() || findGeneratedSecondarySidebar();
   }
 
   function insertGeneratedSidebar(sidebar) {
@@ -253,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Prefer mounting in the same sidebar column as the local TOC.
     // If the page has no local TOC/sidebar, create the normal secondary
     // sidebar container and mount the sticky figure there.
-    var sidebar = document.querySelector('#pst-secondary-sidebar');
+    var sidebar = getAnySecondarySidebar();
     if (!sidebar) {
       sidebar = document.createElement('div');
       sidebar.id = 'pst-secondary-sidebar';
@@ -270,7 +293,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     var sidebarInner = sidebar ? sidebar.querySelector('.sidebar-secondary-items, .sidebar-secondary__inner') : null;
-    var tocItem = document.querySelector('#pst-secondary-sidebar .sidebar-secondary-item');
+    var tocItem = sidebar ? sidebar.querySelector('.sidebar-secondary-item:not(.sticky-margin-secondary-item)') : null;
     if (sidebarInner) {
       var stickyList = sidebarInner.querySelector('.sticky-margin-secondary-list');
       if (!stickyList) {
@@ -411,7 +434,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // Wrap in a sidebar context element so that CSS rules scoped to
       // .bd-sidebar-secondary (e.g. font-size) cascade into the clone
       // during the flight animation.
-      var sidebarEl = document.querySelector('#pst-secondary-sidebar');
+      var sidebarEl = getAnySecondarySidebar();
       var contextClasses = sidebarEl ? sidebarEl.className : 'bd-sidebar-secondary bd-toc';
       var wrapper = document.createElement('div');
       wrapper.className = contextClasses + ' sticky-margin-flight-context';
@@ -509,14 +532,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateStickyTopOffset() {
-      if (aside.closest('#pst-secondary-sidebar')) {
+      if (aside.closest('.bd-sidebar-secondary')) {
         aside.style.top = '0px';
         aside.style.maxHeight = 'calc(100vh - var(--pst-header-height, 4rem))';
         return;
       }
 
       var topOffset = headerHeight;
-      var sidebar = document.querySelector('#pst-secondary-sidebar');
+      var sidebar = getAnySecondarySidebar();
 
       if (window.innerWidth >= 1200 && sidebar && !sidebar.classList.contains('hide')) {
         // The sidebar itself owns open/collapsed behavior in CSS.
