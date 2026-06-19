@@ -144,5 +144,27 @@ When the marker scrolls above the header, the previous sticky margin elements ar
 
 - The sticky margin display is active from `1200px` viewport width and up.
 - The extension injects `sticky-margin.css` and `sticky-margin.js`.
-- MathJax content inside sticky elements is re-typeset when needed.
 - The extension removes explicit line endings (`<br>`, double space in markdown) from figure captions to prevent layout issues in the margin.
+
+## MathJax and Lazy Loading
+
+**MathJax lazy loading is not compatible with this extension.** The sticky margin works by cloning the source element. If MathJax has not yet rendered math before cloning (which happens with lazy loading when the element scrolls off-screen before the lazy observer fires), the clone will contain empty placeholders instead of rendered math.
+
+### Jupyter Book with JupyterBook-Patches
+
+If you are using [JupyterBook-Patches](https://github.com/TeachBooks/jupyterbook-patches), lazy loading can also be disabled in one of two ways:
+
+- Disable the `mathjax` patch entirely (note: this also disables the Firefox MathJax fix).
+- Add `ui/nonlazy` to `config.mathjax3_config['loader']['load']` in your config file:
+
+```yaml
+sphinx:
+  config:
+    mathjax3_config:
+      loader:
+        load:
+          - "ui/nonlazy"
+```
+
+> [!NOTE]
+> `ui/nonlazy` is not a MathJax-defined value. It is introduced by JupyterBook-Patches specifically to allow disabling lazy loading.

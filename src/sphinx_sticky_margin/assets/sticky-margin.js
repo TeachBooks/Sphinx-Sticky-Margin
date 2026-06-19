@@ -313,15 +313,6 @@ document.addEventListener('DOMContentLoaded', function () {
       insertAfter.insertAdjacentElement('afterend', aside);
     }
 
-    function ensureMathVisible() {
-      // Clear any hidden styles on math elements and MathJax containers
-      aside.querySelectorAll('.math').forEach(function(m) { m.style.display = ''; });
-      aside.querySelectorAll('mjx-container').forEach(function(mjx) {
-        mjx.style.visibility = '';
-        mjx.style.display = '';
-      });
-    }
-
     var sourceFlightElement = mainFigure;
     var targetFlightElement = aside.querySelector('figure') || aside.firstElementChild;
     var hideMarker = getNextHideMarker(mainFigure);
@@ -337,36 +328,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var previousMarkerPassedHeader = false;
 
     aside.style.transition = 'opacity 150ms ease-in-out';
-
-    function typesetAsideMath() {
-      if (!aside.classList.contains('is-visible')) {
-        return;
-      }
-
-      ensureMathVisible();
-
-      if (!window.MathJax || typeof window.MathJax.typesetPromise !== 'function') {
-        return;
-      }
-
-      function runTypeset() {
-        if (!aside.classList.contains('is-visible')) {
-          return;
-        }
-
-        window.MathJax.typesetPromise([aside]).then(function () {
-          ensureMathVisible();
-        }).catch(function () {
-          // Ignore transient MathJax failures.
-        });
-      }
-
-      if (window.MathJax.startup && window.MathJax.startup.promise) {
-        window.MathJax.startup.promise.then(runTypeset).catch(function () {});
-      } else {
-        requestAnimationFrame(runTypeset);
-      }
-    }
 
     function cancelPendingHide() {
       if (hideTimeoutId) {
@@ -584,7 +545,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (aside.classList.contains('is-visible')) {
         cancelPendingHide();
-        typesetAsideMath();
         return;
       }
 
@@ -594,7 +554,6 @@ document.addEventListener('DOMContentLoaded', function () {
       var showToken = invalidateVisibilityToken();
 
       if (useFadeIn) {
-        ensureMathVisible();
         aside.classList.add('is-visible');
         if (!prefersReducedMotion) {
           aside.style.opacity = '0';
@@ -602,7 +561,6 @@ document.addEventListener('DOMContentLoaded', function () {
             aside.style.opacity = '1';
           });
         }
-        typesetAsideMath();
         return;
       }
 
@@ -614,9 +572,7 @@ document.addEventListener('DOMContentLoaded', function () {
         !lastSourceRect ||
         window.innerWidth < 1200
       ) {
-        ensureMathVisible();
         aside.classList.add('is-visible');
-        typesetAsideMath();
         return;
       }
 
@@ -625,9 +581,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (targetRect.width === 0 || targetRect.height === 0) {
         aside.classList.remove('is-preparing');
-        ensureMathVisible();
         aside.classList.add('is-visible');
-        typesetAsideMath();
         return;
       }
 
@@ -643,9 +597,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         aside.classList.remove('is-preparing');
-        ensureMathVisible();
         aside.classList.add('is-visible');
-        typesetAsideMath();
       });
     }
 
@@ -735,10 +687,6 @@ document.addEventListener('DOMContentLoaded', function () {
     window.addEventListener('load', function () {
       reorderStickySidebarItems();
       evaluateStickyVisibility();
-
-      if (aside.classList.contains('is-visible')) {
-        typesetAsideMath();
-      }
     });
 
     // Manually trigger visibility check on page load for current scroll position
