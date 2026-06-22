@@ -33,14 +33,14 @@
   /* Inside the secondary sidebar, keep sticky-margin figures in normal flow
      so multiple figures get distinct final positions instead of overlapping
      at the same sticky top offset. */
-  #pst-secondary-sidebar aside.sticky-margin-generated.is-preparing,
-  #pst-secondary-sidebar aside.sticky-margin-generated.is-visible {
+  .bd-sidebar-secondary aside.sticky-margin-generated.is-preparing,
+  .bd-sidebar-secondary aside.sticky-margin-generated.is-visible {
     position: static !important;
     top: auto !important;
   }
 }
 
-#pst-secondary-sidebar .sticky-margin-secondary-item {
+.bd-sidebar-secondary .sticky-margin-secondary-item {
   display: block;
   border-left: none !important;
   padding-left: 0 !important;
@@ -65,17 +65,17 @@
   }
 }
 
-#pst-secondary-sidebar .sticky-margin-secondary-item::before {
+.bd-sidebar-secondary .sticky-margin-secondary-item::before {
   display: none !important;
   content: none !important;
 }
 
-#pst-secondary-sidebar .sticky-margin-secondary-item > aside.sticky-margin-generated {
+.bd-sidebar-secondary .sticky-margin-secondary-item > aside.sticky-margin-generated {
   width: 100%;
   margin: 0 !important;
 }
 
-#pst-secondary-sidebar.sticky-margin-generated-sidebar .sticky-margin-generated-title-spacer {
+.bd-sidebar-secondary.sticky-margin-generated-sidebar .sticky-margin-generated-title-spacer {
   display: block;
   height: 48px;
   margin: 0;
